@@ -34,8 +34,9 @@ app.get('/agents', authenticateRequest, async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
+    console.error('Error details:', error.response?.data || error.message);
     res.status(error.response?.status || 500).json({
-      error: error.response?.data || 'Internal server error'
+      error: error.response?.data || error.message || 'Internal server error'
     });
   }
 });
@@ -48,8 +49,9 @@ app.post('/agents', authenticateRequest, async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
+    console.error('Error details:', error.response?.data || error.message);
     res.status(error.response?.status || 500).json({
-      error: error.response?.data || 'Internal server error'
+      error: error.response?.data || error.message || 'Internal server error'
     });
   }
 });
@@ -65,8 +67,9 @@ app.post('/agents/:agentId/execute', authenticateRequest, async (req, res) => {
     );
     res.json(response.data);
   } catch (error) {
+    console.error('Error details:', error.response?.data || error.message);
     res.status(error.response?.status || 500).json({
-      error: error.response?.data || 'Internal server error'
+      error: error.response?.data || error.message || 'Internal server error'
     });
   }
 });
