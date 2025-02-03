@@ -15,7 +15,7 @@ const TASKADE_API_URL = 'https://www.taskade.com/api/v1';
 
 // Middleware to check for API key
 const authenticateRequest = (req, res, next) => {
-  const apiKey = req.headers['x-api-key'];
+  const apiKey = req.headers['x_api_key'];
   if (!apiKey) {
     return res.status(401).json({ error: 'API key is required' });
   }
