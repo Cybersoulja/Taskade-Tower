@@ -16,7 +16,8 @@ const TASKADE_API_URL = 'https://www.taskade.com/api/v1';
 const authenticateRequest = (req, res, next) => {
   const apiKey = process.env.TASKADE_API_KEY;
   if (!apiKey) {
-    return res.status(401).json({ error: 'API key not configured' });
+    console.error('TASKADE_API_KEY environment variable is not set');
+    return res.status(401).json({ error: 'TASKADE_API_KEY environment variable is not set. Please add it to Secrets.' });
   }
   req.apiKey = apiKey;
   next();
