@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -27,7 +26,7 @@ const authenticateRequest = (req, res, next) => {
 app.get('/agents', authenticateRequest, async (req, res) => {
   try {
     const response = await axios.get(`${TASKADE_API_URL}/agents`, {
-      headers: { 'Authorization': `Bearer ${req.apiKey}` }
+      headers: { 'x-api-key': req.apiKey }
     });
     res.json(response.data);
   } catch (error) {
@@ -41,7 +40,7 @@ app.get('/agents', authenticateRequest, async (req, res) => {
 app.post('/agents', authenticateRequest, async (req, res) => {
   try {
     const response = await axios.post(`${TASKADE_API_URL}/agents`, req.body, {
-      headers: { 'Authorization': `Bearer ${req.apiKey}` }
+      headers: { 'x-api-key': req.apiKey }
     });
     res.json(response.data);
   } catch (error) {
@@ -58,7 +57,7 @@ app.post('/agents/:agentId/execute', authenticateRequest, async (req, res) => {
     const response = await axios.post(
       `${TASKADE_API_URL}/agents/${agentId}/execute`,
       req.body,
-      { headers: { 'Authorization': `Bearer ${req.apiKey}` } }
+      { headers: { 'x-api-key': req.apiKey } }
     );
     res.json(response.data);
   } catch (error) {
