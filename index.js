@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // Base URL for Taskade API
-const TASKADE_API_URL = 'https://app.taskade.com/api/v1';
+const TASKADE_API_URL = 'https://www.taskade.com/api/v1';
 
 // Middleware to check for API key
 const authenticateRequest = (req, res, next) => {
