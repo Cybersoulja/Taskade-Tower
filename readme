@@ -1,0 +1,1 @@
+curl -H "x_api_key: your_api_key" http://localhost:3000/agents
