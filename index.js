@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // Base URL for Taskade API
-const TASKADE_API_URL = 'https://api.taskade.com/api/v1';
+const TASKADE_API_URL = 'https://app.taskade.com/api/v1';
 
 // Middleware to check for API key
 const authenticateRequest = (req, res, next) => {
@@ -26,7 +26,11 @@ const authenticateRequest = (req, res, next) => {
 app.get('/agents', authenticateRequest, async (req, res) => {
   try {
     const response = await axios.get(`${TASKADE_API_URL}/agents`, {
-      headers: { 'x-api-key': req.apiKey }
+      headers: {
+        'x-api-key': req.apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
     });
     res.json(response.data);
   } catch (error) {
