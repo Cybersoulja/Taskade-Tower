@@ -1,5 +1,5 @@
 entrypoint = "index.js"
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "postgresql-16"]
 hidden = [".config", "package-lock.json"]
 
 [gitHubImport]
@@ -19,3 +19,9 @@ ignorePorts = false
 [[ports]]
 localPort = 3000
 externalPort = 80
+
+[objectStorage]
+defaultBucketID = "replit-objstore-f69a1150-f7cd-4609-b1fb-c05f907b6c60"
+
+[agent]
+expertMode = true
