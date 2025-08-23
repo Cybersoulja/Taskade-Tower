@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // Base URL for Taskade API
-const TASKADE_API_URL = 'https://www.taskade.com/api/v1';
+const TASKADE_API_URL = 'https://api.taskade.com/v1';
 
 // Middleware to check for API key
 const authenticateRequest = (req, res, next) => {
@@ -57,6 +57,63 @@ app.post('/agents', authenticateRequest, async (req, res) => {
   }
 });
 
+// Get specific agent
+app.get('/agents/:agentId', authenticateRequest, async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    const response = await axios.get(`${TASKADE_API_URL}/agents/${agentId}`, {
+      headers: {
+        'x-api-key': req.apiKey,
+        'Content-Type': 'application/json'
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error details:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data || error.message || 'Internal server error'
+    });
+  }
+});
+
+// Update agent
+app.put('/agents/:agentId', authenticateRequest, async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    const response = await axios.put(`${TASKADE_API_URL}/agents/${agentId}`, req.body, {
+      headers: {
+        'x-api-key': req.apiKey,
+        'Content-Type': 'application/json'
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error details:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data || error.message || 'Internal server error'
+    });
+  }
+});
+
+// Delete agent
+app.delete('/agents/:agentId', authenticateRequest, async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    const response = await axios.delete(`${TASKADE_API_URL}/agents/${agentId}`, {
+      headers: {
+        'x-api-key': req.apiKey,
+        'Content-Type': 'application/json'
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error details:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data || error.message || 'Internal server error'
+    });
+  }
+});
+
 // Execute agent
 app.post('/agents/:agentId/execute', authenticateRequest, async (req, res) => {
   try {
@@ -64,7 +121,12 @@ app.post('/agents/:agentId/execute', authenticateRequest, async (req, res) => {
     const response = await axios.post(
       `${TASKADE_API_URL}/agents/${agentId}/execute`,
       req.body,
-      { headers: { 'x-api-key': req.apiKey } }
+      { 
+        headers: { 
+          'x-api-key': req.apiKey,
+          'Content-Type': 'application/json'
+        } 
+      }
     );
     res.json(response.data);
   } catch (error) {
@@ -75,6 +137,16 @@ app.post('/agents/:agentId/execute', authenticateRequest, async (req, res) => {
   }
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Taskade Agent Integration API is running',
+    apiKeyConfigured: !!process.env.TASKADE_API_KEY
+  });
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`API Key configured: ${!!process.env.TASKADE_API_KEY}`);
 });

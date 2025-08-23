@@ -25,3 +25,15 @@ defaultBucketID = "replit-objstore-f69a1150-f7cd-4609-b1fb-c05f907b6c60"
 
 [agent]
 expertMode = true
+
+[workflows]
+runButton = "Start Taskade Integration"
+
+[[workflows.workflow]]
+name = "Start Taskade Integration"
+author = 12737802
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
