@@ -1,0 +1,457 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cloudflare API Test Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #f48120;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #f48120;
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            color: #666;
+        }
+        
+        button {
+            background: #f48120;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #e5730e;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .inline-inputs {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .inline-inputs input,
+        .inline-inputs select {
+            flex: 1;
+        }
+        
+        .response {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>☁️ Cloudflare API Test Interface</h1>
+
+    <div class="container">
+        <h2>🌐 Zone Management</h2>
+        
+        <h3>Get All Zones</h3>
+        <button onclick="getZones()">Fetch All Zones</button>
+        <div id="zonesResponse" class="response"></div>
+        
+        <h3>Get Specific Zone</h3>
+        <input type="text" id="zoneId" placeholder="Zone ID">
+        <button onclick="getZone()">Get Zone Details</button>
+        <div id="zoneResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>📝 DNS Management</h2>
+        
+        <h3>Get DNS Records</h3>
+        <div class="inline-inputs">
+            <input type="text" id="dnsZoneId" placeholder="Zone ID">
+            <select id="recordType">
+                <option value="">All Types</option>
+                <option value="A">A</option>
+                <option value="AAAA">AAAA</option>
+                <option value="CNAME">CNAME</option>
+                <option value="MX">MX</option>
+                <option value="TXT">TXT</option>
+                <option value="NS">NS</option>
+            </select>
+            <input type="text" id="recordName" placeholder="Record Name (optional)">
+        </div>
+        <button onclick="getDNSRecords()">Get DNS Records</button>
+        <div id="dnsRecordsResponse" class="response"></div>
+        
+        <h3>Create DNS Record</h3>
+        <div class="inline-inputs">
+            <input type="text" id="createZoneId" placeholder="Zone ID">
+            <select id="createRecordType">
+                <option value="A">A</option>
+                <option value="AAAA">AAAA</option>
+                <option value="CNAME">CNAME</option>
+                <option value="MX">MX</option>
+                <option value="TXT">TXT</option>
+                <option value="NS">NS</option>
+            </select>
+        </div>
+        <div class="inline-inputs">
+            <input type="text" id="createRecordName" placeholder="Record Name">
+            <input type="text" id="createRecordContent" placeholder="Record Content">
+            <input type="number" id="createRecordTTL" placeholder="TTL (optional)" value="1">
+        </div>
+        <button onclick="createDNSRecord()">Create DNS Record</button>
+        <div id="createDNSResponse" class="response"></div>
+        
+        <h3>Update DNS Record</h3>
+        <div class="inline-inputs">
+            <input type="text" id="updateZoneId" placeholder="Zone ID">
+            <input type="text" id="updateRecordId" placeholder="Record ID">
+        </div>
+        <div class="inline-inputs">
+            <input type="text" id="updateRecordName" placeholder="New Record Name">
+            <input type="text" id="updateRecordContent" placeholder="New Record Content">
+        </div>
+        <button onclick="updateDNSRecord()">Update DNS Record</button>
+        <div id="updateDNSResponse" class="response"></div>
+        
+        <h3>Delete DNS Record</h3>
+        <div class="inline-inputs">
+            <input type="text" id="deleteZoneId" placeholder="Zone ID">
+            <input type="text" id="deleteRecordId" placeholder="Record ID">
+        </div>
+        <button onclick="deleteDNSRecord()">Delete DNS Record</button>
+        <div id="deleteDNSResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🚀 Performance & Cache</h2>
+        
+        <h3>Purge Cache</h3>
+        <input type="text" id="purgeZoneId" placeholder="Zone ID">
+        <textarea id="purgeFiles" placeholder="Specific files to purge (optional, one per line)"></textarea>
+        <button onclick="purgeCache()">Purge Cache</button>
+        <div id="purgeResponse" class="response"></div>
+        
+        <h3>Get Analytics</h3>
+        <div class="inline-inputs">
+            <input type="text" id="analyticsZoneId" placeholder="Zone ID">
+            <input type="datetime-local" id="analyticsSince" placeholder="Since">
+            <input type="datetime-local" id="analyticsUntil" placeholder="Until">
+        </div>
+        <button onclick="getAnalytics()">Get Analytics</button>
+        <div id="analyticsResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔒 Security & SSL</h2>
+        
+        <h3>Get Security Settings</h3>
+        <input type="text" id="securityZoneId" placeholder="Zone ID">
+        <button onclick="getSecuritySettings()">Get Security Settings</button>
+        <div id="securityResponse" class="response"></div>
+        
+        <h3>Update Security Level</h3>
+        <div class="inline-inputs">
+            <input type="text" id="secLevelZoneId" placeholder="Zone ID">
+            <select id="securityLevel">
+                <option value="off">Off</option>
+                <option value="essentially_off">Essentially Off</option>
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="under_attack">Under Attack</option>
+            </select>
+        </div>
+        <button onclick="updateSecurityLevel()">Update Security Level</button>
+        <div id="secLevelResponse" class="response"></div>
+        
+        <h3>Get SSL Settings</h3>
+        <input type="text" id="sslZoneId" placeholder="Zone ID">
+        <button onclick="getSSLSettings()">Get SSL Settings</button>
+        <div id="sslResponse" class="response"></div>
+        
+        <h3>Update SSL Mode</h3>
+        <div class="inline-inputs">
+            <input type="text" id="sslModeZoneId" placeholder="Zone ID">
+            <select id="sslMode">
+                <option value="off">Off</option>
+                <option value="flexible">Flexible</option>
+                <option value="full">Full</option>
+                <option value="strict" selected>Full (Strict)</option>
+            </select>
+        </div>
+        <button onclick="updateSSLMode()">Update SSL Mode</button>
+        <div id="sslModeResponse" class="response"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            const url = `${API_BASE}${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        function updateResponseDiv(elementId, result) {
+            const responseDiv = document.getElementById(elementId);
+            responseDiv.textContent = JSON.stringify(result, null, 2);
+            
+            if (result.error) {
+                responseDiv.className = 'response error';
+            } else if (result.success) {
+                responseDiv.className = 'response success';
+            } else {
+                responseDiv.className = 'response';
+            }
+        }
+
+        // Zone Management Functions
+        async function getZones() {
+            const result = await makeRequest('/cloudflare/zones');
+            updateResponseDiv('zonesResponse', result);
+        }
+
+        async function getZone() {
+            const zoneId = document.getElementById('zoneId').value;
+            if (!zoneId.trim()) {
+                alert('Please enter a Zone ID');
+                return;
+            }
+            const result = await makeRequest(`/cloudflare/zones/${zoneId}`);
+            updateResponseDiv('zoneResponse', result);
+        }
+
+        // DNS Management Functions
+        async function getDNSRecords() {
+            const zoneId = document.getElementById('dnsZoneId').value;
+            const type = document.getElementById('recordType').value;
+            const name = document.getElementById('recordName').value;
+            
+            if (!zoneId.trim()) {
+                alert('Please enter a Zone ID');
+                return;
+            }
+            
+            let endpoint = `/cloudflare/zones/${zoneId}/dns`;
+            const params = new URLSearchParams();
+            if (type) params.append('type', type);
+            if (name) params.append('name', name);
+            if (params.toString()) endpoint += '?' + params.toString();
+            
+            const result = await makeRequest(endpoint);
+            updateResponseDiv('dnsRecordsResponse', result);
+        }
+
+        async function createDNSRecord() {
+            const zoneId = document.getElementById('createZoneId').value;
+            const type = document.getElementById('createRecordType').value;
+            const name = document.getElementById('createRecordName').value;
+            const content = document.getElementById('createRecordContent').value;
+            const ttl = document.getElementById('createRecordTTL').value;
+            
+            if (!zoneId.trim() || !name.trim() || !content.trim()) {
+                alert('Please fill in Zone ID, Record Name, and Record Content');
+                return;
+            }
+            
+            const data = { type, name, content };
+            if (ttl) data.ttl = parseInt(ttl);
+            
+            const result = await makeRequest(`/cloudflare/zones/${zoneId}/dns`, 'POST', data);
+            updateResponseDiv('createDNSResponse', result);
+        }
+
+        async function updateDNSRecord() {
+            const zoneId = document.getElementById('updateZoneId').value;
+            const recordId = document.getElementById('updateRecordId').value;
+            const name = document.getElementById('updateRecordName').value;
+            const content = document.getElementById('updateRecordContent').value;
+            
+            if (!zoneId.trim() || !recordId.trim()) {
+                alert('Please enter Zone ID and Record ID');
+                return;
+            }
+            
+            const data = {};
+            if (name.trim()) data.name = name;
+            if (content.trim()) data.content = content;
+            
+            if (Object.keys(data).length === 0) {
+                alert('Please provide at least one field to update');
+                return;
+            }
+            
+            const result = await makeRequest(`/cloudflare/zones/${zoneId}/dns/${recordId}`, 'PUT', data);
+            updateResponseDiv('updateDNSResponse', result);
+        }
+
+        async function deleteDNSRecord() {
+            const zoneId = document.getElementById('deleteZoneId').value;
+            const recordId = document.getElementById('deleteRecordId').value;
+            
+            if (!zoneId.trim() || !recordId.trim()) {
+                alert('Please enter Zone ID and Record ID');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete this DNS record?')) {
+                return;
+            }
+            
+            const result = await makeRequest(`/cloudflare/zones/${zoneId}/dns/${recordId}`, 'DELETE');
+            updateResponseDiv('deleteDNSResponse', result);
+        }
+
+        // Performance & Cache Functions
+        async function purgeCache() {
+            const zoneId = document.getElementById('purgeZoneId').value;
+            const filesText = document.getElementById('purgeFiles').value;
+            
+            if (!zoneId.trim()) {
+                alert('Please enter a Zone ID');
+                return;
+            }
+            
+            const data = {};
+            if (filesText.trim()) {
+                data.files = filesText.split('\n').filter(file => file.trim());
+            }
+            
+            const result = await makeRequest(`/cloudflare/zones/${zoneId}/purge-cache`, 'POST', data);
+            updateResponseDiv('purgeResponse', result);
+        }
+
+        async function getAnalytics() {
+            const zoneId = document.getElementById('analyticsZoneId').value;
+            const since = document.getElementById('analyticsSince').value;
+            const until = document.getElementById('analyticsUntil').value;
+            
+            if (!zoneId.trim()) {
+                alert('Please enter a Zone ID');
+                return;
+            }
+            
+            let endpoint = `/cloudflare/zones/${zoneId}/analytics`;
+            const params = new URLSearchParams();
+            if (since) params.append('since', new Date(since).toISOString());
+            if (until) params.append('until', new Date(until).toISOString());
+            if (params.toString()) endpoint += '?' + params.toString();
+            
+            const result = await makeRequest(endpoint);
+            updateResponseDiv('analyticsResponse', result);
+        }
+
+        // Security & SSL Functions
+        async function getSecuritySettings() {
+            const zoneId = document.getElementById('securityZoneId').value;
+            if (!zoneId.trim()) {
+                alert('Please enter a Zone ID');
+                return;
+            }
+            const result = await makeRequest(`/cloudflare/zones/${zoneId}/security`);
+            updateResponseDiv('securityResponse', result);
+        }
+
+        async function updateSecurityLevel() {
+            const zoneId = document.getElementById('secLevelZoneId').value;
+            const level = document.getElementById('securityLevel').value;
+            
+            if (!zoneId.trim()) {
+                alert('Please enter a Zone ID');
+                return;
+            }
+            
+            const result = await makeRequest(`/cloudflare/zones/${zoneId}/security-level`, 'PUT', { level });
+            updateResponseDiv('secLevelResponse', result);
+        }
+
+        async function getSSLSettings() {
+            const zoneId = document.getElementById('sslZoneId').value;
+            if (!zoneId.trim()) {
+                alert('Please enter a Zone ID');
+                return;
+            }
+            const result = await makeRequest(`/cloudflare/zones/${zoneId}/ssl`);
+            updateResponseDiv('sslResponse', result);
+        }
+
+        async function updateSSLMode() {
+            const zoneId = document.getElementById('sslModeZoneId').value;
+            const mode = document.getElementById('sslMode').value;
+            
+            if (!zoneId.trim()) {
+                alert('Please enter a Zone ID');
+                return;
+            }
+            
+            const result = await makeRequest(`/cloudflare/zones/${zoneId}/ssl`, 'PUT', { mode });
+            updateResponseDiv('sslModeResponse', result);
+        }
+    </script>
+</body>
+</html>

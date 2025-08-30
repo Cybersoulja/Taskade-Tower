@@ -3,6 +3,7 @@ const cors = require('cors');
 const axios = require('axios');
 const GoogleDocsService = require('./google-docs-service');
 const GeminiService = require('./gemini-service');
+const CloudflareService = require('./cloudflare-service');
 require('dotenv').config();
 
 const app = express();
@@ -17,6 +18,14 @@ try {
   geminiService = new GeminiService();
 } catch (error) {
   console.warn('Gemini service not initialized:', error.message);
+}
+
+// Initialize Cloudflare service
+let cloudflareService;
+try {
+  cloudflareService = new CloudflareService();
+} catch (error) {
+  console.warn('Cloudflare service not initialized:', error.message);
 }
 
 app.use(cors());
@@ -35,6 +44,260 @@ const authenticateRequest = (req, res, next) => {
   req.apiKey = apiKey;
   next();
 };
+
+// Cloudflare API endpoints
+
+// Get all zones (domains)
+app.get('/cloudflare/zones', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const zones = await cloudflareService.getZones();
+    res.json({
+      success: true,
+      zones: zones
+    });
+  } catch (error) {
+    console.error('Error fetching zones:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get specific zone details
+app.get('/cloudflare/zones/:zoneId', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId } = req.params;
+    const zone = await cloudflareService.getZone(zoneId);
+    res.json({
+      success: true,
+      zone: zone
+    });
+  } catch (error) {
+    console.error('Error fetching zone:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get DNS records for a zone
+app.get('/cloudflare/zones/:zoneId/dns', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId } = req.params;
+    const { type, name } = req.query;
+    const records = await cloudflareService.getDNSRecords(zoneId, type, name);
+    res.json({
+      success: true,
+      records: records
+    });
+  } catch (error) {
+    console.error('Error fetching DNS records:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a DNS record
+app.post('/cloudflare/zones/:zoneId/dns', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId } = req.params;
+    const recordData = req.body;
+    
+    if (!recordData.type || !recordData.name || !recordData.content) {
+      return res.status(400).json({ error: 'DNS record requires type, name, and content fields' });
+    }
+
+    const record = await cloudflareService.createDNSRecord(zoneId, recordData);
+    res.json({
+      success: true,
+      record: record
+    });
+  } catch (error) {
+    console.error('Error creating DNS record:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update a DNS record
+app.put('/cloudflare/zones/:zoneId/dns/:recordId', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId, recordId } = req.params;
+    const recordData = req.body;
+    
+    const record = await cloudflareService.updateDNSRecord(zoneId, recordId, recordData);
+    res.json({
+      success: true,
+      record: record
+    });
+  } catch (error) {
+    console.error('Error updating DNS record:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete a DNS record
+app.delete('/cloudflare/zones/:zoneId/dns/:recordId', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId, recordId } = req.params;
+    const result = await cloudflareService.deleteDNSRecord(zoneId, recordId);
+    res.json({
+      success: true,
+      result: result
+    });
+  } catch (error) {
+    console.error('Error deleting DNS record:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Purge cache
+app.post('/cloudflare/zones/:zoneId/purge-cache', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId } = req.params;
+    const { files } = req.body;
+    
+    const result = await cloudflareService.purgeCache(zoneId, files);
+    res.json({
+      success: true,
+      result: result
+    });
+  } catch (error) {
+    console.error('Error purging cache:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get zone analytics
+app.get('/cloudflare/zones/:zoneId/analytics', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId } = req.params;
+    const { since, until } = req.query;
+    
+    const analytics = await cloudflareService.getAnalytics(zoneId, since, until);
+    res.json({
+      success: true,
+      analytics: analytics
+    });
+  } catch (error) {
+    console.error('Error fetching analytics:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get security settings
+app.get('/cloudflare/zones/:zoneId/security', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId } = req.params;
+    const settings = await cloudflareService.getSecuritySettings(zoneId);
+    res.json({
+      success: true,
+      settings: settings
+    });
+  } catch (error) {
+    console.error('Error fetching security settings:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update security level
+app.put('/cloudflare/zones/:zoneId/security-level', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId } = req.params;
+    const { level } = req.body;
+    
+    if (!level || !['off', 'essentially_off', 'low', 'medium', 'high', 'under_attack'].includes(level)) {
+      return res.status(400).json({ error: 'Invalid security level. Must be one of: off, essentially_off, low, medium, high, under_attack' });
+    }
+
+    const result = await cloudflareService.updateSecurityLevel(zoneId, level);
+    res.json({
+      success: true,
+      result: result
+    });
+  } catch (error) {
+    console.error('Error updating security level:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get SSL settings
+app.get('/cloudflare/zones/:zoneId/ssl', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId } = req.params;
+    const ssl = await cloudflareService.getSSLSettings(zoneId);
+    res.json({
+      success: true,
+      ssl: ssl
+    });
+  } catch (error) {
+    console.error('Error fetching SSL settings:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update SSL mode
+app.put('/cloudflare/zones/:zoneId/ssl', async (req, res) => {
+  try {
+    if (!cloudflareService) {
+      return res.status(503).json({ error: 'Cloudflare service is not available. Please check your CLOUDFLARE_API_KEY.' });
+    }
+
+    const { zoneId } = req.params;
+    const { mode } = req.body;
+    
+    if (!mode || !['off', 'flexible', 'full', 'strict'].includes(mode)) {
+      return res.status(400).json({ error: 'Invalid SSL mode. Must be one of: off, flexible, full, strict' });
+    }
+
+    const result = await cloudflareService.updateSSLMode(zoneId, mode);
+    res.json({
+      success: true,
+      result: result
+    });
+  } catch (error) {
+    console.error('Error updating SSL mode:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Gemini AI endpoints
 
@@ -468,6 +731,11 @@ app.get('/gemini-test', (req, res) => {
   res.sendFile(__dirname + '/gemini-test.html');
 });
 
+// Serve Cloudflare test interface
+app.get('/cloudflare-test', (req, res) => {
+  res.sendFile(__dirname + '/cloudflare-test.html');
+});
+
 // Serve the main test interface
 app.get('/test', (req, res) => {
   res.sendFile(__dirname + '/test-client.html');
@@ -476,16 +744,18 @@ app.get('/test', (req, res) => {
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Taskade, Google Docs & Gemini AI Integration API',
+    message: 'Taskade, Google Docs, Gemini AI & Cloudflare Integration API',
     endpoints: {
       taskade: '/taskade-tower/health',
       googleDocs: '/google-docs-test',
       gemini: '/gemini-test',
+      cloudflare: '/cloudflare-test',
       test: '/test'
     },
     services: {
       geminiAvailable: !!geminiService,
       googleDocsAvailable: !!googleDocsService,
+      cloudflareAvailable: !!cloudflareService,
       taskadeKeyConfigured: !!process.env.TASKADE_API_KEY
     }
   });
