@@ -24,7 +24,7 @@ const authenticateRequest = (req, res, next) => {
 };
 
 // Get agents list
-app.get('/agents', authenticateRequest, async (req, res) => {
+app.get('/taskade-tower/agents', authenticateRequest, async (req, res) => {
   try {
     const response = await axios.get(`${TASKADE_API_URL}/agents`, {
       headers: {
@@ -43,7 +43,7 @@ app.get('/agents', authenticateRequest, async (req, res) => {
 });
 
 // Create agent
-app.post('/agents', authenticateRequest, async (req, res) => {
+app.post('/taskade-tower/agents', authenticateRequest, async (req, res) => {
   try {
     const response = await axios.post(`${TASKADE_API_URL}/agents`, req.body, {
       headers: { 'x-api-key': req.apiKey }
@@ -58,7 +58,7 @@ app.post('/agents', authenticateRequest, async (req, res) => {
 });
 
 // Get specific agent
-app.get('/agents/:agentId', authenticateRequest, async (req, res) => {
+app.get('/taskade-tower/agents/:agentId', authenticateRequest, async (req, res) => {
   try {
     const { agentId } = req.params;
     const response = await axios.get(`${TASKADE_API_URL}/agents/${agentId}`, {
@@ -77,7 +77,7 @@ app.get('/agents/:agentId', authenticateRequest, async (req, res) => {
 });
 
 // Update agent
-app.put('/agents/:agentId', authenticateRequest, async (req, res) => {
+app.put('/taskade-tower/agents/:agentId', authenticateRequest, async (req, res) => {
   try {
     const { agentId } = req.params;
     const response = await axios.put(`${TASKADE_API_URL}/agents/${agentId}`, req.body, {
@@ -96,7 +96,7 @@ app.put('/agents/:agentId', authenticateRequest, async (req, res) => {
 });
 
 // Delete agent
-app.delete('/agents/:agentId', authenticateRequest, async (req, res) => {
+app.delete('/taskade-tower/agents/:agentId', authenticateRequest, async (req, res) => {
   try {
     const { agentId } = req.params;
     const response = await axios.delete(`${TASKADE_API_URL}/agents/${agentId}`, {
@@ -115,7 +115,7 @@ app.delete('/agents/:agentId', authenticateRequest, async (req, res) => {
 });
 
 // Execute agent
-app.post('/agents/:agentId/execute', authenticateRequest, async (req, res) => {
+app.post('/taskade-tower/agents/:agentId/execute', authenticateRequest, async (req, res) => {
   try {
     const { agentId } = req.params;
     const response = await axios.post(
@@ -138,7 +138,7 @@ app.post('/agents/:agentId/execute', authenticateRequest, async (req, res) => {
 });
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/taskade-tower/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     message: 'Taskade Agent Integration API is running',
