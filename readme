@@ -1,1 +1,13 @@
-curl -H "x_api_key: your_api_key" http://localhost:3000/agents
+# Project Documentation
+
+This project allows you to make HTTP requests to the local server to access agent information.
+
+## API Key Usage
+
+In order to authenticate your requests, make sure to replace `your_api_key` with a valid API key.
+
+## Example of Curl Request
+
+Use the following `curl` command to make requests to the API:
+
+    curl -H "x_api_key: your_api_key" http://localhost:3000/agents
