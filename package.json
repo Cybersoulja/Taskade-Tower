@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@replit/object-storage": "^1.0.0",
     "@types/node": "^18.0.6",
     "axios": "^1.10.0",

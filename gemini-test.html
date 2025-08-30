@@ -1,0 +1,350 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>Gemini AI Integration Test</title>
+    <style type="text/css">
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: "Arial", sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #444444;
+        }
+        
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #ffffff;
+            border-bottom: 1px solid #444444;
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            color: #cccccc;
+            margin-top: 20px;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: "Arial";
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #555555;
+            cursor: not-allowed;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #666666;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background: #333333;
+            color: #ffffff;
+            font-family: "Arial";
+        }
+        
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .large-textarea {
+            height: 200px;
+        }
+        
+        .response {
+            background: #333333;
+            border: 1px solid #555555;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            color: #ffffff;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .error {
+            background: #441111;
+            border-color: #661111;
+            color: #ff6666;
+        }
+        
+        .success {
+            background: #114411;
+            border-color: #116611;
+            color: #66ff66;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .inline-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .inline-inputs input, .inline-inputs select {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gemini AI Integration Test</h1>
+
+    <div class="container">
+        <h2>🤖 Content Generation</h2>
+        
+        <h3>Generate Content from Prompt</h3>
+        <textarea id="generatePrompt" placeholder="Enter your prompt here...">Write a short article about the benefits of artificial intelligence in education.</textarea>
+        <button onclick="generateContent()">Generate Content</button>
+        <div id="generateResponse" class="response"></div>
+        
+        <h3>Generate Document Content</h3>
+        <div class="inline-inputs">
+            <input type="text" id="documentTopic" placeholder="Topic" value="Machine Learning Basics">
+            <select id="contentType">
+                <option value="article">Article</option>
+                <option value="blog post">Blog Post</option>
+                <option value="report">Report</option>
+                <option value="tutorial">Tutorial</option>
+                <option value="summary">Summary</option>
+            </select>
+            <select id="contentLength">
+                <option value="short">Short</option>
+                <option value="medium" selected>Medium</option>
+                <option value="long">Long</option>
+            </select>
+        </div>
+        <div class="checkbox-container">
+            <input type="checkbox" id="createGoogleDoc">
+            <label for="createGoogleDoc">Create Google Doc with generated content</label>
+        </div>
+        <input type="text" id="documentTitle" placeholder="Document title (optional)">
+        <button onclick="generateDocument()">Generate Document</button>
+        <div id="documentResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Content Analysis</h2>
+        
+        <h3>Analyze Text</h3>
+        <textarea id="analyzeText" placeholder="Enter text to analyze..." class="large-textarea">Artificial intelligence is revolutionizing the way we work and live. From healthcare to transportation, AI is making significant impacts across various industries. However, it also raises important questions about ethics, privacy, and the future of human employment.</textarea>
+        <select id="analysisType">
+            <option value="summary" selected>Summary</option>
+            <option value="sentiment">Sentiment Analysis</option>
+            <option value="keywords">Extract Keywords</option>
+            <option value="improve">Improvement Suggestions</option>
+        </select>
+        <button onclick="analyzeContent()">Analyze Content</button>
+        <div id="analyzeResponse" class="response"></div>
+        
+        <h3>Analyze Google Document</h3>
+        <div class="inline-inputs">
+            <input type="text" id="analyzeDocId" placeholder="Google Doc ID">
+            <select id="docAnalysisType">
+                <option value="summary" selected>Summary</option>
+                <option value="sentiment">Sentiment Analysis</option>
+                <option value="keywords">Extract Keywords</option>
+                <option value="improve">Improvement Suggestions</option>
+            </select>
+        </div>
+        <button onclick="analyzeDocument()">Analyze Document</button>
+        <div id="docAnalyzeResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>✨ Content Enhancement</h2>
+        
+        <h3>Enhance Google Document</h3>
+        <input type="text" id="enhanceDocId" placeholder="Google Doc ID">
+        <div class="inline-inputs">
+            <select id="enhancementType">
+                <option value="improve" selected>Improve</option>
+                <option value="expand">Expand</option>
+                <option value="simplify">Simplify</option>
+                <option value="professional">Make Professional</option>
+                <option value="casual">Make Casual</option>
+            </select>
+            <div class="checkbox-container">
+                <input type="checkbox" id="replaceOriginal">
+                <label for="replaceOriginal">Replace original content</label>
+            </div>
+        </div>
+        <button onclick="enhanceDocument()">Enhance Document</button>
+        <div id="enhanceResponse" class="response"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            const url = `${API_BASE}${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        function updateResponseDiv(elementId, result) {
+            const responseDiv = document.getElementById(elementId);
+            responseDiv.textContent = JSON.stringify(result, null, 2);
+            
+            if (result.error) {
+                responseDiv.className = 'response error';
+            } else if (result.success) {
+                responseDiv.className = 'response success';
+            } else {
+                responseDiv.className = 'response';
+            }
+        }
+
+        async function generateContent() {
+            const prompt = document.getElementById('generatePrompt').value;
+            if (!prompt.trim()) {
+                alert('Please enter a prompt');
+                return;
+            }
+
+            const result = await makeRequest('/gemini/generate', 'POST', { prompt });
+            updateResponseDiv('generateResponse', result);
+        }
+
+        async function generateDocument() {
+            const topic = document.getElementById('documentTopic').value;
+            const contentType = document.getElementById('contentType').value;
+            const length = document.getElementById('contentLength').value;
+            const createGoogleDoc = document.getElementById('createGoogleDoc').checked;
+            const documentTitle = document.getElementById('documentTitle').value;
+
+            if (!topic.trim()) {
+                alert('Please enter a topic');
+                return;
+            }
+
+            const result = await makeRequest('/gemini/generate-document', 'POST', {
+                topic,
+                contentType,
+                length,
+                createGoogleDoc,
+                documentTitle: documentTitle || undefined
+            });
+            
+            updateResponseDiv('documentResponse', result);
+            
+            // Auto-fill document ID if Google Doc was created
+            if (result.success && result.googleDoc) {
+                document.getElementById('analyzeDocId').value = result.googleDoc.documentId;
+                document.getElementById('enhanceDocId').value = result.googleDoc.documentId;
+            }
+        }
+
+        async function analyzeContent() {
+            const text = document.getElementById('analyzeText').value;
+            const analysisType = document.getElementById('analysisType').value;
+
+            if (!text.trim()) {
+                alert('Please enter text to analyze');
+                return;
+            }
+
+            const result = await makeRequest('/gemini/analyze', 'POST', { text, analysisType });
+            updateResponseDiv('analyzeResponse', result);
+        }
+
+        async function analyzeDocument() {
+            const documentId = document.getElementById('analyzeDocId').value;
+            const analysisType = document.getElementById('docAnalysisType').value;
+
+            if (!documentId.trim()) {
+                alert('Please enter a Google Doc ID');
+                return;
+            }
+
+            const result = await makeRequest(`/gemini/analyze-document/${documentId}?analysisType=${analysisType}`);
+            updateResponseDiv('docAnalyzeResponse', result);
+        }
+
+        async function enhanceDocument() {
+            const documentId = document.getElementById('enhanceDocId').value;
+            const enhancementType = document.getElementById('enhancementType').value;
+            const replaceOriginal = document.getElementById('replaceOriginal').checked;
+
+            if (!documentId.trim()) {
+                alert('Please enter a Google Doc ID');
+                return;
+            }
+
+            const result = await makeRequest(`/gemini/enhance-document/${documentId}`, 'POST', {
+                enhancementType,
+                replaceOriginal
+            });
+            updateResponseDiv('enhanceResponse', result);
+        }
+
+        // Check API availability on load
+        window.addEventListener('load', async () => {
+            const status = await makeRequest('/');
+            if (status.services && !status.services.geminiAvailable) {
+                document.body.insertAdjacentHTML('afterbegin', 
+                    '<div style="background: #441111; color: #ff6666; padding: 15px; margin-bottom: 20px; border-radius: 4px; text-align: center;">' +
+                    '⚠️ Gemini AI service is not available. Please check your GEMINI_API_KEY in Secrets.' +
+                    '</div>'
+                );
+            }
+        });
+    </script>
+</body>
+</html>
