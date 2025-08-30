@@ -1,1 +1,277 @@
-<html><head><meta content="text/html; charset=UTF-8" http-equiv="content-type"><style type="text/css">ol{margin:0;padding:0}table td,table th{padding:0}.c1{color:#000000;font-weight:400;text-decoration:none;vertical-align:baseline;font-size:11pt;font-family:"Arial";font-style:normal}.c2{padding-top:0pt;padding-bottom:0pt;line-height:1.15;orphans:2;widows:2;text-align:left;height:11pt}.c0{background-color:#000000;max-width:468pt;padding:72pt 72pt 72pt 72pt}.title{padding-top:0pt;color:#000000;font-size:26pt;padding-bottom:3pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}.subtitle{padding-top:0pt;color:#666666;font-size:15pt;padding-bottom:16pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}li{color:#000000;font-size:11pt;font-family:"Arial"}p{margin:0;color:#000000;font-size:11pt;font-family:"Arial"}h1{padding-top:20pt;color:#000000;font-size:20pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h2{padding-top:18pt;color:#000000;font-size:16pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h3{padding-top:16pt;color:#434343;font-size:14pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h4{padding-top:14pt;color:#666666;font-size:12pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h5{padding-top:12pt;color:#666666;font-size:11pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h6{padding-top:12pt;color:#666666;font-size:11pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;font-style:italic;orphans:2;widows:2;text-align:left}</style></head><body class="c0 doc-content"><p class="c2"><span class="c1"></span></p></body></html>
+
+<html>
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>Taskade Agent Integration</title>
+    <style type="text/css">
+        ol{margin:0;padding:0}
+        table td,table th{padding:0}
+        .c1{color:#ffffff;font-weight:400;text-decoration:none;vertical-align:baseline;font-size:11pt;font-family:"Arial";font-style:normal}
+        .c2{padding-top:0pt;padding-bottom:0pt;line-height:1.15;orphans:2;widows:2;text-align:left;height:11pt}
+        .c0{background-color:#000000;max-width:100%;padding:20px;min-height:100vh}
+        .title{padding-top:0pt;color:#ffffff;font-size:26pt;padding-bottom:3pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:center}
+        .subtitle{padding-top:0pt;color:#cccccc;font-size:15pt;padding-bottom:16pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:center}
+        li{color:#ffffff;font-size:11pt;font-family:"Arial"}
+        p{margin:0;color:#ffffff;font-size:11pt;font-family:"Arial"}
+        h1{padding-top:20pt;color:#ffffff;font-size:20pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
+        h2{padding-top:18pt;color:#ffffff;font-size:16pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
+        h3{padding-top:16pt;color:#cccccc;font-size:14pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
+        h4{padding-top:14pt;color:#999999;font-size:12pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
+        h5{padding-top:12pt;color:#999999;font-size:11pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
+        h6{padding-top:12pt;color:#999999;font-size:11pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;font-style:italic;orphans:2;widows:2;text-align:left}
+        
+        .container {
+            background: #222222;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #444444;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: "Arial";
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #666666;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background: #333333;
+            color: #ffffff;
+            font-family: "Arial";
+        }
+        
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .response {
+            background: #333333;
+            border: 1px solid #555555;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            color: #ffffff;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .error {
+            background: #441111;
+            border-color: #661111;
+            color: #ff6666;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-ok {
+            background-color: #28a745;
+        }
+        
+        .status-error {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body class="c0 doc-content">
+    <div class="title">Taskade Agent Integration</div>
+    <div class="subtitle">API Testing Interface</div>
+    
+    <div class="container">
+        <h2>System Health Check</h2>
+        <button onclick="checkHealth()">Check API Health</button>
+        <div id="healthResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>Agent Management</h2>
+        <h3>Get All Agents</h3>
+        <button onclick="getAgents()">Fetch Agents List</button>
+        <div id="agentsResponse" class="response"></div>
+        
+        <h3>Create New Agent</h3>
+        <input type="text" id="agentName" placeholder="Agent Name" value="Test Agent">
+        <textarea id="agentDescription" placeholder="Agent Description">A test agent created through the API interface</textarea>
+        <button onclick="createAgent()">Create Agent</button>
+        <div id="createResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>Agent Operations</h2>
+        <h3>Get Specific Agent</h3>
+        <input type="text" id="getAgentId" placeholder="Agent ID">
+        <button onclick="getSpecificAgent()">Get Agent Details</button>
+        <div id="getAgentResponse" class="response"></div>
+        
+        <h3>Execute Agent</h3>
+        <input type="text" id="executeAgentId" placeholder="Agent ID">
+        <textarea id="executePrompt" placeholder="Execution prompt">Hello, please help me with a simple task.</textarea>
+        <button onclick="executeAgent()">Execute Agent</button>
+        <div id="executeResponse" class="response"></div>
+        
+        <h3>Update Agent</h3>
+        <input type="text" id="updateAgentId" placeholder="Agent ID">
+        <input type="text" id="updateAgentName" placeholder="New Agent Name">
+        <textarea id="updateAgentDescription" placeholder="New Agent Description"></textarea>
+        <button onclick="updateAgent()">Update Agent</button>
+        <div id="updateResponse" class="response"></div>
+        
+        <h3>Delete Agent</h3>
+        <input type="text" id="deleteAgentId" placeholder="Agent ID">
+        <button onclick="deleteAgent()">Delete Agent</button>
+        <div id="deleteResponse" class="response"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function makeRequest(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+                
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                return { data, status: response.status };
+            } catch (error) {
+                return { error: error.message, status: 500 };
+            }
+        }
+
+        function updateResponseDiv(elementId, result) {
+            const responseDiv = document.getElementById(elementId);
+            responseDiv.textContent = JSON.stringify(result, null, 2);
+            responseDiv.className = result.error ? 'response error' : 'response';
+        }
+
+        async function checkHealth() {
+            const result = await makeRequest('/health');
+            updateResponseDiv('healthResponse', result);
+        }
+
+        async function getAgents() {
+            const result = await makeRequest('/agents');
+            updateResponseDiv('agentsResponse', result);
+        }
+
+        async function createAgent() {
+            const name = document.getElementById('agentName').value;
+            const description = document.getElementById('agentDescription').value;
+            
+            if (!name.trim()) {
+                alert('Please enter an agent name');
+                return;
+            }
+            
+            const result = await makeRequest('/agents', 'POST', {
+                name,
+                description
+            });
+            
+            updateResponseDiv('createResponse', result);
+        }
+
+        async function getSpecificAgent() {
+            const agentId = document.getElementById('getAgentId').value;
+            
+            if (!agentId.trim()) {
+                alert('Please enter an Agent ID');
+                return;
+            }
+            
+            const result = await makeRequest(`/agents/${agentId}`);
+            updateResponseDiv('getAgentResponse', result);
+        }
+
+        async function executeAgent() {
+            const agentId = document.getElementById('executeAgentId').value;
+            const prompt = document.getElementById('executePrompt').value;
+            
+            if (!agentId.trim()) {
+                alert('Please enter an Agent ID');
+                return;
+            }
+            
+            const result = await makeRequest(`/agents/${agentId}/execute`, 'POST', {
+                prompt
+            });
+            
+            updateResponseDiv('executeResponse', result);
+        }
+
+        async function updateAgent() {
+            const agentId = document.getElementById('updateAgentId').value;
+            const name = document.getElementById('updateAgentName').value;
+            const description = document.getElementById('updateAgentDescription').value;
+            
+            if (!agentId.trim()) {
+                alert('Please enter an Agent ID');
+                return;
+            }
+            
+            const updateData = {};
+            if (name.trim()) updateData.name = name;
+            if (description.trim()) updateData.description = description;
+            
+            if (Object.keys(updateData).length === 0) {
+                alert('Please provide at least one field to update');
+                return;
+            }
+            
+            const result = await makeRequest(`/agents/${agentId}`, 'PUT', updateData);
+            updateResponseDiv('updateResponse', result);
+        }
+
+        async function deleteAgent() {
+            const agentId = document.getElementById('deleteAgentId').value;
+            
+            if (!agentId.trim()) {
+                alert('Please enter an Agent ID');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete this agent?')) {
+                return;
+            }
+            
+            const result = await makeRequest(`/agents/${agentId}`, 'DELETE');
+            updateResponseDiv('deleteResponse', result);
+        }
+
+        // Auto-check health on page load
+        window.addEventListener('load', checkHealth);
+    </script>
+</body>
+</html>
