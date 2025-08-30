@@ -18,7 +18,6 @@ ignorePorts = false
 
 [[ports]]
 localPort = 3000
-externalPort = 80
 
 [objectStorage]
 defaultBucketID = "replit-objstore-f69a1150-f7cd-4609-b1fb-c05f907b6c60"
