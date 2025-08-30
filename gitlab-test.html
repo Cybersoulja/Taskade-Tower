@@ -1,0 +1,636 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>GitLab API Test Interface</title>
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2d3748;
+            color: #e2e8f0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #fc6d26;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #fc6d26;
+            border-bottom: 2px solid #fc6d26;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            color: #fdb94e;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            background: #1a202c;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #4a5568;
+        }
+
+        button {
+            background: #fc6d26;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: Arial, sans-serif;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background: #e55a1c;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background: #2d3748;
+            color: #e2e8f0;
+            font-family: Arial, sans-serif;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .response {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #e2e8f0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .error {
+            background: #742a2a;
+            border-color: #fc8181;
+            color: #fed7d7;
+        }
+
+        .inline-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .inline-inputs input, .inline-inputs select {
+            margin: 0;
+        }
+
+        .model-info {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-ok {
+            background-color: #48bb78;
+        }
+
+        .status-error {
+            background-color: #f56565;
+        }
+    </style>
+</head>
+<body>
+    <h1>🦊 GitLab API Test Interface</h1>
+
+    <div class="container">
+        <h2>👤 User Information</h2>
+        
+        <h3>Get Current User</h3>
+        <button onclick="getCurrentUser()">Get Current User Info</button>
+        <div id="userResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>📁 Project Management</h2>
+        
+        <h3>Get All Projects</h3>
+        <div class="inline-inputs">
+            <select id="projectFilters">
+                <option value="">All Projects</option>
+                <option value="owned=true">Owned by Me</option>
+                <option value="membership=true">Member Projects</option>
+                <option value="visibility=public">Public Projects</option>
+                <option value="visibility=private">Private Projects</option>
+            </select>
+            <input type="text" id="projectSearch" placeholder="Search projects...">
+        </div>
+        <button onclick="getProjects()">Get Projects</button>
+        <div id="projectsResponse" class="response"></div>
+        
+        <h3>Get Specific Project</h3>
+        <input type="text" id="specificProjectId" placeholder="Project ID">
+        <button onclick="getSpecificProject()">Get Project Details</button>
+        <div id="specificProjectResponse" class="response"></div>
+        
+        <h3>Create New Project</h3>
+        <div class="inline-inputs">
+            <input type="text" id="newProjectName" placeholder="Project Name" value="Test Project">
+            <select id="projectVisibility">
+                <option value="private">Private</option>
+                <option value="public">Public</option>
+                <option value="internal">Internal</option>
+            </select>
+        </div>
+        <textarea id="newProjectDescription" placeholder="Project Description">A test project created via API</textarea>
+        <button onclick="createProject()">Create Project</button>
+        <div id="createProjectResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🌿 Branch Management</h2>
+        
+        <h3>Get Project Branches</h3>
+        <input type="text" id="branchProjectId" placeholder="Project ID">
+        <button onclick="getBranches()">Get Branches</button>
+        <div id="branchesResponse" class="response"></div>
+        
+        <h3>Create New Branch</h3>
+        <div class="inline-inputs">
+            <input type="text" id="newBranchProjectId" placeholder="Project ID">
+            <input type="text" id="newBranchName" placeholder="Branch Name" value="feature/test-branch">
+            <input type="text" id="newBranchRef" placeholder="Source Branch/Ref" value="main">
+        </div>
+        <button onclick="createBranch()">Create Branch</button>
+        <div id="createBranchResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>📝 Repository Files</h2>
+        
+        <h3>Get Repository Files</h3>
+        <div class="inline-inputs">
+            <input type="text" id="fileProjectId" placeholder="Project ID">
+            <input type="text" id="filePath" placeholder="File Path (optional)">
+            <input type="text" id="fileRef" placeholder="Branch/Ref" value="main">
+        </div>
+        <button onclick="getRepositoryFiles()">Get Files</button>
+        <div id="filesResponse" class="response"></div>
+        
+        <h3>Create/Update File</h3>
+        <div class="inline-inputs">
+            <input type="text" id="updateFileProjectId" placeholder="Project ID">
+            <input type="text" id="updateFilePath" placeholder="File Path" value="README.md">
+            <input type="text" id="updateFileBranch" placeholder="Branch" value="main">
+        </div>
+        <textarea id="fileContent" placeholder="File Content"># Test File
+
+This is a test file created via GitLab API.</textarea>
+        <input type="text" id="commitMessage" placeholder="Commit Message" value="Add/Update test file">
+        <button onclick="createOrUpdateFile()">Create/Update File</button>
+        <div id="updateFileResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Commits</h2>
+        
+        <h3>Get Project Commits</h3>
+        <div class="inline-inputs">
+            <input type="text" id="commitProjectId" placeholder="Project ID">
+            <input type="text" id="commitRef" placeholder="Branch/Ref (optional)" value="main">
+            <input type="text" id="commitPath" placeholder="File Path (optional)">
+        </div>
+        <button onclick="getCommits()">Get Commits</button>
+        <div id="commitsResponse" class="response"></div>
+        
+        <h3>Get Specific Commit</h3>
+        <div class="inline-inputs">
+            <input type="text" id="specificCommitProjectId" placeholder="Project ID">
+            <input type="text" id="commitSha" placeholder="Commit SHA">
+        </div>
+        <button onclick="getSpecificCommit()">Get Commit Details</button>
+        <div id="specificCommitResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🐛 Issues</h2>
+        
+        <h3>Get Project Issues</h3>
+        <div class="inline-inputs">
+            <input type="text" id="issueProjectId" placeholder="Project ID">
+            <select id="issueState">
+                <option value="">All Issues</option>
+                <option value="opened">Open</option>
+                <option value="closed">Closed</option>
+            </select>
+        </div>
+        <button onclick="getIssues()">Get Issues</button>
+        <div id="issuesResponse" class="response"></div>
+        
+        <h3>Create New Issue</h3>
+        <input type="text" id="newIssueProjectId" placeholder="Project ID">
+        <input type="text" id="issueTitle" placeholder="Issue Title" value="Test Issue">
+        <textarea id="issueDescription" placeholder="Issue Description">This is a test issue created via API.</textarea>
+        <button onclick="createIssue()">Create Issue</button>
+        <div id="createIssueResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔀 Merge Requests</h2>
+        
+        <h3>Get Merge Requests</h3>
+        <div class="inline-inputs">
+            <input type="text" id="mrProjectId" placeholder="Project ID">
+            <select id="mrState">
+                <option value="">All MRs</option>
+                <option value="opened">Open</option>
+                <option value="closed">Closed</option>
+                <option value="merged">Merged</option>
+            </select>
+        </div>
+        <button onclick="getMergeRequests()">Get Merge Requests</button>
+        <div id="mergeRequestsResponse" class="response"></div>
+        
+        <h3>Create Merge Request</h3>
+        <input type="text" id="newMrProjectId" placeholder="Project ID">
+        <div class="inline-inputs">
+            <input type="text" id="mrTitle" placeholder="MR Title" value="Test Merge Request">
+            <input type="text" id="sourceBranch" placeholder="Source Branch" value="feature/test-branch">
+            <input type="text" id="targetBranch" placeholder="Target Branch" value="main">
+        </div>
+        <textarea id="mrDescription" placeholder="MR Description">This is a test merge request created via API.</textarea>
+        <button onclick="createMergeRequest()">Create Merge Request</button>
+        <div id="createMrResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🚀 Pipelines</h2>
+        
+        <h3>Get Pipelines</h3>
+        <div class="inline-inputs">
+            <input type="text" id="pipelineProjectId" placeholder="Project ID">
+            <select id="pipelineStatus">
+                <option value="">All Statuses</option>
+                <option value="running">Running</option>
+                <option value="pending">Pending</option>
+                <option value="success">Success</option>
+                <option value="failed">Failed</option>
+                <option value="canceled">Canceled</option>
+            </select>
+        </div>
+        <button onclick="getPipelines()">Get Pipelines</button>
+        <div id="pipelinesResponse" class="response"></div>
+        
+        <h3>Create Pipeline</h3>
+        <div class="inline-inputs">
+            <input type="text" id="newPipelineProjectId" placeholder="Project ID">
+            <input type="text" id="pipelineRef" placeholder="Branch/Tag" value="main">
+        </div>
+        <button onclick="createPipeline()">Create Pipeline</button>
+        <div id="createPipelineResponse" class="response"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            const url = `${API_BASE}/gitlab${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        function updateResponseDiv(elementId, result) {
+            const responseDiv = document.getElementById(elementId);
+            responseDiv.textContent = JSON.stringify(result, null, 2);
+            responseDiv.className = result.error ? 'response error' : 'response';
+        }
+
+        // User functions
+        async function getCurrentUser() {
+            const result = await makeRequest('/user');
+            updateResponseDiv('userResponse', result);
+        }
+
+        // Project functions
+        async function getProjects() {
+            let endpoint = '/projects';
+            const filters = document.getElementById('projectFilters').value;
+            const search = document.getElementById('projectSearch').value;
+            
+            const params = new URLSearchParams();
+            if (filters) {
+                const [key, value] = filters.split('=');
+                params.append(key, value);
+            }
+            if (search) params.append('search', search);
+            
+            if (params.toString()) {
+                endpoint += '?' + params.toString();
+            }
+
+            const result = await makeRequest(endpoint);
+            updateResponseDiv('projectsResponse', result);
+        }
+
+        async function getSpecificProject() {
+            const projectId = document.getElementById('specificProjectId').value;
+            if (!projectId.trim()) {
+                alert('Please enter a Project ID');
+                return;
+            }
+
+            const result = await makeRequest(`/projects/${projectId}`);
+            updateResponseDiv('specificProjectResponse', result);
+        }
+
+        async function createProject() {
+            const name = document.getElementById('newProjectName').value;
+            const description = document.getElementById('newProjectDescription').value;
+            const visibility = document.getElementById('projectVisibility').value;
+
+            if (!name.trim()) {
+                alert('Please enter a project name');
+                return;
+            }
+
+            const result = await makeRequest('/projects', 'POST', {
+                name,
+                description,
+                visibility
+            });
+
+            updateResponseDiv('createProjectResponse', result);
+        }
+
+        // Branch functions
+        async function getBranches() {
+            const projectId = document.getElementById('branchProjectId').value;
+            if (!projectId.trim()) {
+                alert('Please enter a Project ID');
+                return;
+            }
+
+            const result = await makeRequest(`/projects/${projectId}/branches`);
+            updateResponseDiv('branchesResponse', result);
+        }
+
+        async function createBranch() {
+            const projectId = document.getElementById('newBranchProjectId').value;
+            const branchName = document.getElementById('newBranchName').value;
+            const ref = document.getElementById('newBranchRef').value;
+
+            if (!projectId.trim() || !branchName.trim()) {
+                alert('Please enter Project ID and Branch Name');
+                return;
+            }
+
+            const result = await makeRequest(`/projects/${projectId}/branches`, 'POST', {
+                branch_name: branchName,
+                ref: ref || 'main'
+            });
+
+            updateResponseDiv('createBranchResponse', result);
+        }
+
+        // File functions
+        async function getRepositoryFiles() {
+            const projectId = document.getElementById('fileProjectId').value;
+            const filePath = document.getElementById('filePath').value;
+            const ref = document.getElementById('fileRef').value;
+
+            if (!projectId.trim()) {
+                alert('Please enter a Project ID');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            if (filePath) params.append('file_path', filePath);
+            if (ref) params.append('ref', ref);
+
+            const endpoint = `/projects/${projectId}/repository/files` + 
+                           (params.toString() ? '?' + params.toString() : '');
+
+            const result = await makeRequest(endpoint);
+            updateResponseDiv('filesResponse', result);
+        }
+
+        async function createOrUpdateFile() {
+            const projectId = document.getElementById('updateFileProjectId').value;
+            const filePath = document.getElementById('updateFilePath').value;
+            const content = document.getElementById('fileContent').value;
+            const commitMessage = document.getElementById('commitMessage').value;
+            const branch = document.getElementById('updateFileBranch').value;
+
+            if (!projectId.trim() || !filePath.trim() || !content.trim() || !commitMessage.trim()) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const result = await makeRequest(`/projects/${projectId}/repository/files`, 'POST', {
+                file_path: filePath,
+                content: content,
+                commit_message: commitMessage,
+                branch: branch || 'main'
+            });
+
+            updateResponseDiv('updateFileResponse', result);
+        }
+
+        // Commit functions
+        async function getCommits() {
+            const projectId = document.getElementById('commitProjectId').value;
+            const ref = document.getElementById('commitRef').value;
+            const path = document.getElementById('commitPath').value;
+
+            if (!projectId.trim()) {
+                alert('Please enter a Project ID');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            if (ref) params.append('ref_name', ref);
+            if (path) params.append('path', path);
+
+            const endpoint = `/projects/${projectId}/commits` + 
+                           (params.toString() ? '?' + params.toString() : '');
+
+            const result = await makeRequest(endpoint);
+            updateResponseDiv('commitsResponse', result);
+        }
+
+        async function getSpecificCommit() {
+            const projectId = document.getElementById('specificCommitProjectId').value;
+            const commitSha = document.getElementById('commitSha').value;
+
+            if (!projectId.trim() || !commitSha.trim()) {
+                alert('Please enter Project ID and Commit SHA');
+                return;
+            }
+
+            const result = await makeRequest(`/projects/${projectId}/commits/${commitSha}`);
+            updateResponseDiv('specificCommitResponse', result);
+        }
+
+        // Issue functions
+        async function getIssues() {
+            const projectId = document.getElementById('issueProjectId').value;
+            const state = document.getElementById('issueState').value;
+
+            if (!projectId.trim()) {
+                alert('Please enter a Project ID');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            if (state) params.append('state', state);
+
+            const endpoint = `/projects/${projectId}/issues` + 
+                           (params.toString() ? '?' + params.toString() : '');
+
+            const result = await makeRequest(endpoint);
+            updateResponseDiv('issuesResponse', result);
+        }
+
+        async function createIssue() {
+            const projectId = document.getElementById('newIssueProjectId').value;
+            const title = document.getElementById('issueTitle').value;
+            const description = document.getElementById('issueDescription').value;
+
+            if (!projectId.trim() || !title.trim()) {
+                alert('Please enter Project ID and Issue Title');
+                return;
+            }
+
+            const result = await makeRequest(`/projects/${projectId}/issues`, 'POST', {
+                title,
+                description
+            });
+
+            updateResponseDiv('createIssueResponse', result);
+        }
+
+        // Merge Request functions
+        async function getMergeRequests() {
+            const projectId = document.getElementById('mrProjectId').value;
+            const state = document.getElementById('mrState').value;
+
+            if (!projectId.trim()) {
+                alert('Please enter a Project ID');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            if (state) params.append('state', state);
+
+            const endpoint = `/projects/${projectId}/merge_requests` + 
+                           (params.toString() ? '?' + params.toString() : '');
+
+            const result = await makeRequest(endpoint);
+            updateResponseDiv('mergeRequestsResponse', result);
+        }
+
+        async function createMergeRequest() {
+            const projectId = document.getElementById('newMrProjectId').value;
+            const title = document.getElementById('mrTitle').value;
+            const sourceBranch = document.getElementById('sourceBranch').value;
+            const targetBranch = document.getElementById('targetBranch').value;
+            const description = document.getElementById('mrDescription').value;
+
+            if (!projectId.trim() || !title.trim() || !sourceBranch.trim() || !targetBranch.trim()) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const result = await makeRequest(`/projects/${projectId}/merge_requests`, 'POST', {
+                title,
+                source_branch: sourceBranch,
+                target_branch: targetBranch,
+                description
+            });
+
+            updateResponseDiv('createMrResponse', result);
+        }
+
+        // Pipeline functions
+        async function getPipelines() {
+            const projectId = document.getElementById('pipelineProjectId').value;
+            const status = document.getElementById('pipelineStatus').value;
+
+            if (!projectId.trim()) {
+                alert('Please enter a Project ID');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            if (status) params.append('status', status);
+
+            const endpoint = `/projects/${projectId}/pipelines` + 
+                           (params.toString() ? '?' + params.toString() : '');
+
+            const result = await makeRequest(endpoint);
+            updateResponseDiv('pipelinesResponse', result);
+        }
+
+        async function createPipeline() {
+            const projectId = document.getElementById('newPipelineProjectId').value;
+            const ref = document.getElementById('pipelineRef').value;
+
+            if (!projectId.trim() || !ref.trim()) {
+                alert('Please enter Project ID and Branch/Tag reference');
+                return;
+            }
+
+            const result = await makeRequest(`/projects/${projectId}/pipelines`, 'POST', {
+                ref
+            });
+
+            updateResponseDiv('createPipelineResponse', result);
+        }
+
+        // Auto-load user info on page load
+        window.addEventListener('load', getCurrentUser);
+    </script>
+</body>
+</html>

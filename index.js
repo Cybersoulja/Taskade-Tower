@@ -5,6 +5,7 @@ const GoogleDocsService = require('./google-docs-service');
 const GeminiService = require('./gemini-service');
 const CloudflareService = require('./cloudflare-service');
 const HuggingFaceService = require('./huggingface-service');
+const GitlabService = require('./gitlab-service');
 require('dotenv').config();
 
 const app = express();
@@ -35,6 +36,14 @@ try {
   huggingFaceService = new HuggingFaceService();
 } catch (error) {
   console.warn('Hugging Face service not initialized:', error.message);
+}
+
+// Initialize GitLab service
+let gitlabService;
+try {
+  gitlabService = new GitlabService();
+} catch (error) {
+  console.warn('GitLab service not initialized:', error.message);
 }
 
 app.use(cors());
@@ -316,6 +325,488 @@ app.post('/huggingface/text-to-image', async (req, res) => {
     });
   } catch (error) {
     console.error('Error generating image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GitLab API endpoints
+
+// Get current user
+app.get('/gitlab/user', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const user = await gitlabService.getCurrentUser();
+    res.json({
+      success: true,
+      user: user
+    });
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all projects
+app.get('/gitlab/projects', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { owned, membership, search, visibility } = req.query;
+    const options = {};
+    if (owned !== undefined) options.owned = owned === 'true';
+    if (membership !== undefined) options.membership = membership === 'true';
+    if (search) options.search = search;
+    if (visibility) options.visibility = visibility;
+
+    const projects = await gitlabService.getProjects(options);
+    res.json({
+      success: true,
+      projects: projects
+    });
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get specific project
+app.get('/gitlab/projects/:projectId', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const project = await gitlabService.getProject(projectId);
+    res.json({
+      success: true,
+      project: project
+    });
+  } catch (error) {
+    console.error('Error fetching project:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a new project
+app.post('/gitlab/projects', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const projectData = req.body;
+    if (!projectData.name) {
+      return res.status(400).json({ error: 'Project name is required' });
+    }
+
+    const project = await gitlabService.createProject(projectData);
+    res.json({
+      success: true,
+      project: project
+    });
+  } catch (error) {
+    console.error('Error creating project:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get project branches
+app.get('/gitlab/projects/:projectId/branches', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const branches = await gitlabService.getBranches(projectId);
+    res.json({
+      success: true,
+      branches: branches
+    });
+  } catch (error) {
+    console.error('Error fetching branches:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a new branch
+app.post('/gitlab/projects/:projectId/branches', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { branch_name, ref = 'main' } = req.body;
+    
+    if (!branch_name) {
+      return res.status(400).json({ error: 'Branch name is required' });
+    }
+
+    const branch = await gitlabService.createBranch(projectId, branch_name, ref);
+    res.json({
+      success: true,
+      branch: branch
+    });
+  } catch (error) {
+    console.error('Error creating branch:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get project commits
+app.get('/gitlab/projects/:projectId/commits', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { ref_name, since, until, path } = req.query;
+    const options = {};
+    if (ref_name) options.ref_name = ref_name;
+    if (since) options.since = since;
+    if (until) options.until = until;
+    if (path) options.path = path;
+
+    const commits = await gitlabService.getCommits(projectId, options);
+    res.json({
+      success: true,
+      commits: commits
+    });
+  } catch (error) {
+    console.error('Error fetching commits:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get specific commit
+app.get('/gitlab/projects/:projectId/commits/:commitSha', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId, commitSha } = req.params;
+    const commit = await gitlabService.getCommit(projectId, commitSha);
+    res.json({
+      success: true,
+      commit: commit
+    });
+  } catch (error) {
+    console.error('Error fetching commit:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get project issues
+app.get('/gitlab/projects/:projectId/issues', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { state, labels, milestone, assignee_id } = req.query;
+    const options = {};
+    if (state) options.state = state;
+    if (labels) options.labels = labels;
+    if (milestone) options.milestone = milestone;
+    if (assignee_id) options.assignee_id = assignee_id;
+
+    const issues = await gitlabService.getIssues(projectId, options);
+    res.json({
+      success: true,
+      issues: issues
+    });
+  } catch (error) {
+    console.error('Error fetching issues:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a new issue
+app.post('/gitlab/projects/:projectId/issues', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const issueData = req.body;
+    
+    if (!issueData.title) {
+      return res.status(400).json({ error: 'Issue title is required' });
+    }
+
+    const issue = await gitlabService.createIssue(projectId, issueData);
+    res.json({
+      success: true,
+      issue: issue
+    });
+  } catch (error) {
+    console.error('Error creating issue:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update an issue
+app.put('/gitlab/projects/:projectId/issues/:issueIid', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId, issueIid } = req.params;
+    const updateData = req.body;
+
+    const issue = await gitlabService.updateIssue(projectId, issueIid, updateData);
+    res.json({
+      success: true,
+      issue: issue
+    });
+  } catch (error) {
+    console.error('Error updating issue:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get merge requests
+app.get('/gitlab/projects/:projectId/merge_requests', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { state, target_branch, source_branch } = req.query;
+    const options = {};
+    if (state) options.state = state;
+    if (target_branch) options.target_branch = target_branch;
+    if (source_branch) options.source_branch = source_branch;
+
+    const mergeRequests = await gitlabService.getMergeRequests(projectId, options);
+    res.json({
+      success: true,
+      merge_requests: mergeRequests
+    });
+  } catch (error) {
+    console.error('Error fetching merge requests:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a merge request
+app.post('/gitlab/projects/:projectId/merge_requests', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const mergeRequestData = req.body;
+    
+    if (!mergeRequestData.title || !mergeRequestData.source_branch || !mergeRequestData.target_branch) {
+      return res.status(400).json({ error: 'Title, source_branch, and target_branch are required' });
+    }
+
+    const mergeRequest = await gitlabService.createMergeRequest(projectId, mergeRequestData);
+    res.json({
+      success: true,
+      merge_request: mergeRequest
+    });
+  } catch (error) {
+    console.error('Error creating merge request:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get pipelines
+app.get('/gitlab/projects/:projectId/pipelines', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { status, ref, sha } = req.query;
+    const options = {};
+    if (status) options.status = status;
+    if (ref) options.ref = ref;
+    if (sha) options.sha = sha;
+
+    const pipelines = await gitlabService.getPipelines(projectId, options);
+    res.json({
+      success: true,
+      pipelines: pipelines
+    });
+  } catch (error) {
+    console.error('Error fetching pipelines:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a pipeline
+app.post('/gitlab/projects/:projectId/pipelines', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { ref, variables = {} } = req.body;
+    
+    if (!ref) {
+      return res.status(400).json({ error: 'Branch/tag reference is required' });
+    }
+
+    const pipeline = await gitlabService.createPipeline(projectId, ref, variables);
+    res.json({
+      success: true,
+      pipeline: pipeline
+    });
+  } catch (error) {
+    console.error('Error creating pipeline:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get project members
+app.get('/gitlab/projects/:projectId/members', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const members = await gitlabService.getProjectMembers(projectId);
+    res.json({
+      success: true,
+      members: members
+    });
+  } catch (error) {
+    console.error('Error fetching project members:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add project member
+app.post('/gitlab/projects/:projectId/members', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { user_id, access_level } = req.body;
+    
+    if (!user_id || !access_level) {
+      return res.status(400).json({ error: 'User ID and access level are required' });
+    }
+
+    const member = await gitlabService.addProjectMember(projectId, user_id, access_level);
+    res.json({
+      success: true,
+      member: member
+    });
+  } catch (error) {
+    console.error('Error adding project member:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get repository files
+app.get('/gitlab/projects/:projectId/repository/files', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { file_path = '', ref = 'main' } = req.query;
+
+    const files = await gitlabService.getRepositoryFiles(projectId, file_path, ref);
+    res.json({
+      success: true,
+      files: files
+    });
+  } catch (error) {
+    console.error('Error fetching repository files:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create or update a file
+app.post('/gitlab/projects/:projectId/repository/files', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { file_path, content, commit_message, branch = 'main' } = req.body;
+    
+    if (!file_path || !content || !commit_message) {
+      return res.status(400).json({ error: 'File path, content, and commit message are required' });
+    }
+
+    const result = await gitlabService.createOrUpdateFile(projectId, file_path, content, commit_message, branch);
+    res.json({
+      success: true,
+      result: result
+    });
+  } catch (error) {
+    console.error('Error creating/updating file:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete a file
+app.delete('/gitlab/projects/:projectId/repository/files', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const { file_path, commit_message, branch = 'main' } = req.body;
+    
+    if (!file_path || !commit_message) {
+      return res.status(400).json({ error: 'File path and commit message are required' });
+    }
+
+    const result = await gitlabService.deleteFile(projectId, file_path, commit_message, branch);
+    res.json({
+      success: true,
+      result: result
+    });
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get project statistics
+app.get('/gitlab/projects/:projectId/statistics', async (req, res) => {
+  try {
+    if (!gitlabService) {
+      return res.status(503).json({ error: 'GitLab service is not available. Please check your GITLAB_API_KEY.' });
+    }
+
+    const { projectId } = req.params;
+    const stats = await gitlabService.getProjectStatistics(projectId);
+    res.json({
+      success: true,
+      statistics: stats
+    });
+  } catch (error) {
+    console.error('Error fetching project statistics:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -1016,6 +1507,11 @@ app.get('/huggingface-test', (req, res) => {
   res.sendFile(__dirname + '/huggingface-test.html');
 });
 
+// Serve GitLab test interface
+app.get('/gitlab-test', (req, res) => {
+  res.sendFile(__dirname + '/gitlab-test.html');
+});
+
 // Serve the main test interface
 app.get('/test', (req, res) => {
   res.sendFile(__dirname + '/test-client.html');
@@ -1024,13 +1520,14 @@ app.get('/test', (req, res) => {
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Taskade, Google Docs, Gemini AI, Cloudflare & Hugging Face Integration API',
+    message: 'Taskade, Google Docs, Gemini AI, Cloudflare, Hugging Face & GitLab Integration API',
     endpoints: {
       taskade: '/taskade-tower/health',
       googleDocs: '/google-docs-test',
       gemini: '/gemini-test',
       cloudflare: '/cloudflare-test',
       huggingface: '/huggingface-test',
+      gitlab: '/gitlab-test',
       test: '/test'
     },
     services: {
@@ -1038,6 +1535,7 @@ app.get('/', (req, res) => {
       googleDocsAvailable: !!googleDocsService,
       cloudflareAvailable: !!cloudflareService,
       huggingFaceAvailable: !!huggingFaceService,
+      gitlabAvailable: !!gitlabService,
       taskadeKeyConfigured: !!process.env.TASKADE_API_KEY
     }
   });
