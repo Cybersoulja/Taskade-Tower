@@ -4,6 +4,7 @@ const axios = require('axios');
 const GoogleDocsService = require('./google-docs-service');
 const GeminiService = require('./gemini-service');
 const CloudflareService = require('./cloudflare-service');
+const HuggingFaceService = require('./huggingface-service');
 require('dotenv').config();
 
 const app = express();
@@ -28,6 +29,14 @@ try {
   console.warn('Cloudflare service not initialized:', error.message);
 }
 
+// Initialize Hugging Face service
+let huggingFaceService;
+try {
+  huggingFaceService = new HuggingFaceService();
+} catch (error) {
+  console.warn('Hugging Face service not initialized:', error.message);
+}
+
 app.use(cors());
 app.use(express.json());
 
@@ -44,6 +53,272 @@ const authenticateRequest = (req, res, next) => {
   req.apiKey = apiKey;
   next();
 };
+
+// Hugging Face API endpoints
+
+// Text Generation
+app.post('/huggingface/text-generation', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { prompt, model, parameters } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    const result = await huggingFaceService.generateText(prompt, model, parameters);
+    res.json({
+      success: true,
+      generated_text: result,
+      model: model || 'gpt2'
+    });
+  } catch (error) {
+    console.error('Error generating text:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Text Classification
+app.post('/huggingface/text-classification', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { text, model } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    const result = await huggingFaceService.classifyText(text, model);
+    res.json({
+      success: true,
+      classification: result,
+      model: model || 'cardiffnlp/twitter-roberta-base-sentiment-latest'
+    });
+  } catch (error) {
+    console.error('Error classifying text:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Question Answering
+app.post('/huggingface/question-answering', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { question, context, model } = req.body;
+    if (!question || !context) {
+      return res.status(400).json({ error: 'Both question and context are required' });
+    }
+
+    const result = await huggingFaceService.answerQuestion(question, context, model);
+    res.json({
+      success: true,
+      answer: result,
+      model: model || 'deepset/roberta-base-squad2'
+    });
+  } catch (error) {
+    console.error('Error answering question:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Text Summarization
+app.post('/huggingface/summarization', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { text, model, parameters } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    const result = await huggingFaceService.summarizeText(text, model, parameters);
+    res.json({
+      success: true,
+      summary: result,
+      model: model || 'facebook/bart-large-cnn'
+    });
+  } catch (error) {
+    console.error('Error summarizing text:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Named Entity Recognition
+app.post('/huggingface/entity-recognition', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { text, model } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    const result = await huggingFaceService.extractEntities(text, model);
+    res.json({
+      success: true,
+      entities: result,
+      model: model || 'dbmdz/bert-large-cased-finetuned-conll03-english'
+    });
+  } catch (error) {
+    console.error('Error extracting entities:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Translation
+app.post('/huggingface/translation', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { text, model } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    const result = await huggingFaceService.translateText(text, model);
+    res.json({
+      success: true,
+      translation: result,
+      model: model || 'Helsinki-NLP/opus-mt-en-fr'
+    });
+  } catch (error) {
+    console.error('Error translating text:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Feature Extraction (Embeddings)
+app.post('/huggingface/embeddings', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { text, model } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    const result = await huggingFaceService.getEmbeddings(text, model);
+    res.json({
+      success: true,
+      embeddings: result,
+      model: model || 'sentence-transformers/all-MiniLM-L6-v2'
+    });
+  } catch (error) {
+    console.error('Error getting embeddings:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Fill Mask
+app.post('/huggingface/fill-mask', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { text, model } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: 'Text with [MASK] token is required' });
+    }
+
+    const result = await huggingFaceService.fillMask(text, model);
+    res.json({
+      success: true,
+      predictions: result,
+      model: model || 'bert-base-uncased'
+    });
+  } catch (error) {
+    console.error('Error filling mask:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Image Classification
+app.post('/huggingface/image-classification', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { imageUrl, model } = req.body;
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'Image URL is required' });
+    }
+
+    const result = await huggingFaceService.classifyImage(imageUrl, model);
+    res.json({
+      success: true,
+      classification: result,
+      model: model || 'google/vit-base-patch16-224'
+    });
+  } catch (error) {
+    console.error('Error classifying image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Object Detection
+app.post('/huggingface/object-detection', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { imageUrl, model } = req.body;
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'Image URL is required' });
+    }
+
+    const result = await huggingFaceService.detectObjects(imageUrl, model);
+    res.json({
+      success: true,
+      detections: result,
+      model: model || 'facebook/detr-resnet-50'
+    });
+  } catch (error) {
+    console.error('Error detecting objects:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Text-to-Image
+app.post('/huggingface/text-to-image', async (req, res) => {
+  try {
+    if (!huggingFaceService) {
+      return res.status(503).json({ error: 'Hugging Face service is not available. Please check your HUGGINGFACE_API_KEY.' });
+    }
+
+    const { prompt, model } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    const result = await huggingFaceService.generateImage(prompt, model);
+    res.json({
+      success: true,
+      image: result,
+      model: model || 'runwayml/stable-diffusion-v1-5'
+    });
+  } catch (error) {
+    console.error('Error generating image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Cloudflare API endpoints
 
@@ -736,6 +1011,11 @@ app.get('/cloudflare-test', (req, res) => {
   res.sendFile(__dirname + '/cloudflare-test.html');
 });
 
+// Serve Hugging Face test interface
+app.get('/huggingface-test', (req, res) => {
+  res.sendFile(__dirname + '/huggingface-test.html');
+});
+
 // Serve the main test interface
 app.get('/test', (req, res) => {
   res.sendFile(__dirname + '/test-client.html');
@@ -744,18 +1024,20 @@ app.get('/test', (req, res) => {
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Taskade, Google Docs, Gemini AI & Cloudflare Integration API',
+    message: 'Taskade, Google Docs, Gemini AI, Cloudflare & Hugging Face Integration API',
     endpoints: {
       taskade: '/taskade-tower/health',
       googleDocs: '/google-docs-test',
       gemini: '/gemini-test',
       cloudflare: '/cloudflare-test',
+      huggingface: '/huggingface-test',
       test: '/test'
     },
     services: {
       geminiAvailable: !!geminiService,
       googleDocsAvailable: !!googleDocsService,
       cloudflareAvailable: !!cloudflareService,
+      huggingFaceAvailable: !!huggingFaceService,
       taskadeKeyConfigured: !!process.env.TASKADE_API_KEY
     }
   });

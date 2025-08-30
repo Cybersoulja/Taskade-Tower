@@ -1,0 +1,445 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>🤗 Hugging Face Models Integration Test</title>
+    <style type="text/css">
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        h1 {
+            color: #ff6b35;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #ff6b35;
+            border-bottom: 2px solid #ff6b35;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        h3 {
+            color: #ffa500;
+            margin-top: 20px;
+        }
+        
+        .container {
+            background: #222222;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #444444;
+        }
+        
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: Arial, sans-serif;
+        }
+        
+        button:hover {
+            background: #e55a2b;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #666666;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background: #333333;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+        
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .large-textarea {
+            height: 150px;
+        }
+        
+        .response {
+            background: #333333;
+            border: 1px solid #555555;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            color: #ffffff;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .error {
+            background: #441111;
+            border-color: #661111;
+            color: #ff6666;
+        }
+        
+        .success {
+            background: #114411;
+            border-color: #116611;
+            color: #66ff66;
+        }
+        
+        .inline-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .inline-inputs input, .inline-inputs select {
+            flex: 1;
+        }
+        
+        .model-info {
+            font-size: 12px;
+            color: #888888;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤗 Hugging Face Models Integration Test</h1>
+
+    <div class="container">
+        <h2>📝 Text Generation</h2>
+        
+        <h3>Generate Text</h3>
+        <textarea id="textGenPrompt" placeholder="Enter your prompt...">Once upon a time in a distant galaxy</textarea>
+        <div class="inline-inputs">
+            <input type="text" id="textGenModel" placeholder="Model (optional)" value="gpt2">
+            <input type="number" id="maxTokens" placeholder="Max tokens" value="50">
+            <input type="number" id="temperature" placeholder="Temperature" value="0.7" step="0.1">
+        </div>
+        <div class="model-info">Default model: gpt2 | Popular alternatives: distilgpt2, microsoft/DialoGPT-medium</div>
+        <button onclick="generateText()">Generate Text</button>
+        <div id="textGenResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🎯 Text Classification</h2>
+        
+        <h3>Classify Text</h3>
+        <textarea id="classifyText" placeholder="Enter text to classify...">I love this product! It's amazing and works perfectly.</textarea>
+        <input type="text" id="classifyModel" placeholder="Model (optional)" value="cardiffnlp/twitter-roberta-base-sentiment-latest">
+        <div class="model-info">Default: sentiment analysis | Try: facebook/bart-large-mnli for zero-shot classification</div>
+        <button onclick="classifyText()">Classify Text</button>
+        <div id="classifyResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>❓ Question Answering</h2>
+        
+        <h3>Answer Question</h3>
+        <input type="text" id="question" placeholder="Enter your question..." value="What is the capital of France?">
+        <textarea id="context" placeholder="Enter context...">France is a country in Western Europe. Its capital and largest city is Paris, which is located in the north-central part of the country.</textarea>
+        <input type="text" id="qaModel" placeholder="Model (optional)" value="deepset/roberta-base-squad2">
+        <div class="model-info">Default: deepset/roberta-base-squad2 | Try: distilbert-base-cased-distilled-squad</div>
+        <button onclick="answerQuestion()">Answer Question</button>
+        <div id="qaResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>📄 Text Summarization</h2>
+        
+        <h3>Summarize Text</h3>
+        <textarea id="summarizeText" class="large-textarea" placeholder="Enter text to summarize...">Artificial intelligence (AI) is intelligence demonstrated by machines, as opposed to natural intelligence displayed by humans and animals. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals. The term artificial intelligence is often used to describe machines that mimic cognitive functions that humans associate with the human mind, such as learning and problem solving.</textarea>
+        <div class="inline-inputs">
+            <input type="text" id="summarizeModel" placeholder="Model (optional)" value="facebook/bart-large-cnn">
+            <input type="number" id="maxLength" placeholder="Max length" value="130">
+            <input type="number" id="minLength" placeholder="Min length" value="30">
+        </div>
+        <div class="model-info">Default: facebook/bart-large-cnn | Try: google/pegasus-xsum for shorter summaries</div>
+        <button onclick="summarizeText()">Summarize Text</button>
+        <div id="summarizeResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🏷️ Named Entity Recognition</h2>
+        
+        <h3>Extract Entities</h3>
+        <textarea id="nerText" placeholder="Enter text for entity extraction...">Apple Inc. is an American multinational technology company headquartered in Cupertino, California. Tim Cook is the CEO.</textarea>
+        <input type="text" id="nerModel" placeholder="Model (optional)" value="dbmdz/bert-large-cased-finetuned-conll03-english">
+        <div class="model-info">Default: BERT NER model | Extracts PERSON, LOCATION, ORGANIZATION, MISCELLANEOUS</div>
+        <button onclick="extractEntities()">Extract Entities</button>
+        <div id="nerResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🌐 Translation</h2>
+        
+        <h3>Translate Text</h3>
+        <textarea id="translateText" placeholder="Enter text to translate...">Hello, how are you today?</textarea>
+        <input type="text" id="translateModel" placeholder="Model (optional)" value="Helsinki-NLP/opus-mt-en-fr">
+        <div class="model-info">Default: English to French | Try: Helsinki-NLP/opus-mt-en-de (German), Helsinki-NLP/opus-mt-en-es (Spanish)</div>
+        <button onclick="translateText()">Translate Text</button>
+        <div id="translateResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🧮 Text Embeddings</h2>
+        
+        <h3>Get Text Embeddings</h3>
+        <textarea id="embeddingText" placeholder="Enter text to get embeddings...">This is a sample sentence for embedding.</textarea>
+        <input type="text" id="embeddingModel" placeholder="Model (optional)" value="sentence-transformers/all-MiniLM-L6-v2">
+        <div class="model-info">Default: all-MiniLM-L6-v2 | Try: sentence-transformers/all-mpnet-base-v2 for higher quality</div>
+        <button onclick="getEmbeddings()">Get Embeddings</button>
+        <div id="embeddingResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🎭 Fill Mask</h2>
+        
+        <h3>Fill Masked Word</h3>
+        <input type="text" id="maskText" placeholder="Enter text with [MASK] token..." value="The capital of France is [MASK].">
+        <input type="text" id="maskModel" placeholder="Model (optional)" value="bert-base-uncased">
+        <div class="model-info">Default: bert-base-uncased | Use [MASK] token in your text</div>
+        <button onclick="fillMask()">Fill Mask</button>
+        <div id="maskResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🖼️ Image Classification</h2>
+        
+        <h3>Classify Image</h3>
+        <input type="url" id="imageUrl" placeholder="Enter image URL..." value="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/American_Eskimo_Dog.jpg/320px-American_Eskimo_Dog.jpg">
+        <input type="text" id="imageModel" placeholder="Model (optional)" value="google/vit-base-patch16-224">
+        <div class="model-info">Default: Vision Transformer | Try: microsoft/resnet-50 for ResNet-based classification</div>
+        <button onclick="classifyImage()">Classify Image</button>
+        <div id="imageResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>🎨 Text-to-Image</h2>
+        
+        <h3>Generate Image</h3>
+        <textarea id="imagePrompt" placeholder="Enter image description...">A beautiful sunset over a mountain landscape with a lake in the foreground</textarea>
+        <input type="text" id="imageGenModel" placeholder="Model (optional)" value="runwayml/stable-diffusion-v1-5">
+        <div class="model-info">Default: Stable Diffusion v1.5 | Note: Image generation may take longer</div>
+        <button onclick="generateImage()">Generate Image</button>
+        <div id="imageGenResponse" class="response"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function makeRequest(endpoint, data) {
+            try {
+                const response = await fetch(`${API_BASE}/huggingface${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        function updateResponseDiv(elementId, result) {
+            const responseDiv = document.getElementById(elementId);
+            responseDiv.textContent = JSON.stringify(result, null, 2);
+            responseDiv.className = result.error ? 'response error' : 'response success';
+        }
+
+        async function generateText() {
+            const prompt = document.getElementById('textGenPrompt').value;
+            const model = document.getElementById('textGenModel').value;
+            const maxTokens = document.getElementById('maxTokens').value;
+            const temperature = document.getElementById('temperature').value;
+
+            if (!prompt.trim()) {
+                alert('Please enter a prompt');
+                return;
+            }
+
+            const data = { prompt };
+            if (model.trim()) data.model = model;
+            
+            const parameters = {};
+            if (maxTokens) parameters.max_new_tokens = parseInt(maxTokens);
+            if (temperature) parameters.temperature = parseFloat(temperature);
+            if (Object.keys(parameters).length > 0) data.parameters = parameters;
+
+            const result = await makeRequest('/text-generation', data);
+            updateResponseDiv('textGenResponse', result);
+        }
+
+        async function classifyText() {
+            const text = document.getElementById('classifyText').value;
+            const model = document.getElementById('classifyModel').value;
+
+            if (!text.trim()) {
+                alert('Please enter text to classify');
+                return;
+            }
+
+            const data = { text };
+            if (model.trim()) data.model = model;
+
+            const result = await makeRequest('/text-classification', data);
+            updateResponseDiv('classifyResponse', result);
+        }
+
+        async function answerQuestion() {
+            const question = document.getElementById('question').value;
+            const context = document.getElementById('context').value;
+            const model = document.getElementById('qaModel').value;
+
+            if (!question.trim() || !context.trim()) {
+                alert('Please enter both question and context');
+                return;
+            }
+
+            const data = { question, context };
+            if (model.trim()) data.model = model;
+
+            const result = await makeRequest('/question-answering', data);
+            updateResponseDiv('qaResponse', result);
+        }
+
+        async function summarizeText() {
+            const text = document.getElementById('summarizeText').value;
+            const model = document.getElementById('summarizeModel').value;
+            const maxLength = document.getElementById('maxLength').value;
+            const minLength = document.getElementById('minLength').value;
+
+            if (!text.trim()) {
+                alert('Please enter text to summarize');
+                return;
+            }
+
+            const data = { text };
+            if (model.trim()) data.model = model;
+            
+            const parameters = {};
+            if (maxLength) parameters.max_length = parseInt(maxLength);
+            if (minLength) parameters.min_length = parseInt(minLength);
+            if (Object.keys(parameters).length > 0) data.parameters = parameters;
+
+            const result = await makeRequest('/summarization', data);
+            updateResponseDiv('summarizeResponse', result);
+        }
+
+        async function extractEntities() {
+            const text = document.getElementById('nerText').value;
+            const model = document.getElementById('nerModel').value;
+
+            if (!text.trim()) {
+                alert('Please enter text for entity extraction');
+                return;
+            }
+
+            const data = { text };
+            if (model.trim()) data.model = model;
+
+            const result = await makeRequest('/entity-recognition', data);
+            updateResponseDiv('nerResponse', result);
+        }
+
+        async function translateText() {
+            const text = document.getElementById('translateText').value;
+            const model = document.getElementById('translateModel').value;
+
+            if (!text.trim()) {
+                alert('Please enter text to translate');
+                return;
+            }
+
+            const data = { text };
+            if (model.trim()) data.model = model;
+
+            const result = await makeRequest('/translation', data);
+            updateResponseDiv('translateResponse', result);
+        }
+
+        async function getEmbeddings() {
+            const text = document.getElementById('embeddingText').value;
+            const model = document.getElementById('embeddingModel').value;
+
+            if (!text.trim()) {
+                alert('Please enter text to get embeddings');
+                return;
+            }
+
+            const data = { text };
+            if (model.trim()) data.model = model;
+
+            const result = await makeRequest('/embeddings', data);
+            updateResponseDiv('embeddingResponse', result);
+        }
+
+        async function fillMask() {
+            const text = document.getElementById('maskText').value;
+            const model = document.getElementById('maskModel').value;
+
+            if (!text.trim() || !text.includes('[MASK]')) {
+                alert('Please enter text with [MASK] token');
+                return;
+            }
+
+            const data = { text };
+            if (model.trim()) data.model = model;
+
+            const result = await makeRequest('/fill-mask', data);
+            updateResponseDiv('maskResponse', result);
+        }
+
+        async function classifyImage() {
+            const imageUrl = document.getElementById('imageUrl').value;
+            const model = document.getElementById('imageModel').value;
+
+            if (!imageUrl.trim()) {
+                alert('Please enter an image URL');
+                return;
+            }
+
+            const data = { imageUrl };
+            if (model.trim()) data.model = model;
+
+            const result = await makeRequest('/image-classification', data);
+            updateResponseDiv('imageResponse', result);
+        }
+
+        async function generateImage() {
+            const prompt = document.getElementById('imagePrompt').value;
+            const model = document.getElementById('imageGenModel').value;
+
+            if (!prompt.trim()) {
+                alert('Please enter an image description');
+                return;
+            }
+
+            const data = { prompt };
+            if (model.trim()) data.model = model;
+
+            const result = await makeRequest('/text-to-image', data);
+            updateResponseDiv('imageGenResponse', result);
+        }
+    </script>
+</body>
+</html>
