@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Docs API Test Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3367d6;
+        }
+        .response {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            color: #4285f4;
+            border-bottom: 2px solid #4285f4;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Docs API Test Interface</h1>
+    
+    <div class="container">
+        <h2>Create New Document</h2>
+        <input type="text" id="createTitle" placeholder="Document Title" value="Test Document">
+        <button onclick="createDocument()">Create Document</button>
+        <div id="createResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>Read Document</h2>
+        <input type="text" id="readDocId" placeholder="Document ID">
+        <button onclick="readDocument()">Read Document</button>
+        <div id="readResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>Insert Text (at beginning)</h2>
+        <input type="text" id="insertDocId" placeholder="Document ID">
+        <textarea id="insertText" placeholder="Text to insert">Hello, this is inserted text!&#10;</textarea>
+        <button onclick="insertText()">Insert Text</button>
+        <div id="insertResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>Append Text (at end)</h2>
+        <input type="text" id="appendDocId" placeholder="Document ID">
+        <textarea id="appendText" placeholder="Text to append">&#10;This text is appended at the end!</textarea>
+        <button onclick="appendText()">Append Text</button>
+        <div id="appendResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>Replace Text</h2>
+        <input type="text" id="replaceDocId" placeholder="Document ID">
+        <input type="text" id="searchText" placeholder="Text to search for">
+        <input type="text" id="replaceText" placeholder="Replace with">
+        <button onclick="replaceText()">Replace Text</button>
+        <div id="replaceResponse" class="response"></div>
+    </div>
+
+    <div class="container">
+        <h2>Custom Update (Advanced)</h2>
+        <input type="text" id="updateDocId" placeholder="Document ID">
+        <textarea id="updateRequests" placeholder="JSON requests array">
+[
+  {
+    "insertText": {
+      "location": { "index": 1 },
+      "text": "Custom formatted text\n"
+    }
+  },
+  {
+    "updateTextStyle": {
+      "range": {
+        "startIndex": 1,
+        "endIndex": 20
+      },
+      "textStyle": {
+        "bold": true,
+        "fontSize": {
+          "magnitude": 14,
+          "unit": "PT"
+        }
+      },
+      "fields": "bold,fontSize"
+    }
+  }
+]</textarea>
+        <button onclick="updateDocument()">Update Document</button>
+        <div id="updateResponse" class="response"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            const url = `${API_BASE}${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        function updateResponseDiv(elementId, result) {
+            const responseDiv = document.getElementById(elementId);
+            responseDiv.textContent = JSON.stringify(result, null, 2);
+            
+            if (result.error) {
+                responseDiv.className = 'response error';
+            } else if (result.success) {
+                responseDiv.className = 'response success';
+            } else {
+                responseDiv.className = 'response';
+            }
+        }
+
+        async function createDocument() {
+            const title = document.getElementById('createTitle').value;
+            const result = await makeRequest('/google-docs/create', 'POST', { title });
+            updateResponseDiv('createResponse', result);
+            
+            if (result.success) {
+                // Auto-fill the document ID in other fields
+                document.getElementById('readDocId').value = result.documentId;
+                document.getElementById('insertDocId').value = result.documentId;
+                document.getElementById('appendDocId').value = result.documentId;
+                document.getElementById('replaceDocId').value = result.documentId;
+                document.getElementById('updateDocId').value = result.documentId;
+            }
+        }
+
+        async function readDocument() {
+            const docId = document.getElementById('readDocId').value;
+            if (!docId.trim()) {
+                alert('Please enter a Document ID');
+                return;
+            }
+            const result = await makeRequest(`/google-docs/${docId}`);
+            updateResponseDiv('readResponse', result);
+        }
+
+        async function insertText() {
+            const docId = document.getElementById('insertDocId').value;
+            const text = document.getElementById('insertText').value;
+            
+            if (!docId.trim()) {
+                alert('Please enter a Document ID');
+                return;
+            }
+            
+            const result = await makeRequest(`/google-docs/${docId}/insert`, 'POST', { text });
+            updateResponseDiv('insertResponse', result);
+        }
+
+        async function appendText() {
+            const docId = document.getElementById('appendDocId').value;
+            const text = document.getElementById('appendText').value;
+            
+            if (!docId.trim()) {
+                alert('Please enter a Document ID');
+                return;
+            }
+            
+            const result = await makeRequest(`/google-docs/${docId}/append`, 'POST', { text });
+            updateResponseDiv('appendResponse', result);
+        }
+
+        async function replaceText() {
+            const docId = document.getElementById('replaceDocId').value;
+            const searchText = document.getElementById('searchText').value;
+            const replaceText = document.getElementById('replaceText').value;
+            
+            if (!docId.trim()) {
+                alert('Please enter a Document ID');
+                return;
+            }
+            
+            const result = await makeRequest(`/google-docs/${docId}/replace`, 'POST', { 
+                searchText, 
+                replaceText 
+            });
+            updateResponseDiv('replaceResponse', result);
+        }
+
+        async function updateDocument() {
+            const docId = document.getElementById('updateDocId').value;
+            const requestsText = document.getElementById('updateRequests').value;
+            
+            if (!docId.trim()) {
+                alert('Please enter a Document ID');
+                return;
+            }
+            
+            try {
+                const requests = JSON.parse(requestsText);
+                const result = await makeRequest(`/google-docs/${docId}/update`, 'POST', { requests });
+                updateResponseDiv('updateResponse', result);
+            } catch (error) {
+                updateResponseDiv('updateResponse', { error: 'Invalid JSON in requests field' });
+            }
+        }
+    </script>
+</body>
+</html>

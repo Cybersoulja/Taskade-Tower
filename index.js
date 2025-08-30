@@ -1,10 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const GoogleDocsService = require('./google-docs-service');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize Google Docs service
+const googleDocsService = new GoogleDocsService();
 
 app.use(cors());
 app.use(express.json());
@@ -22,6 +26,133 @@ const authenticateRequest = (req, res, next) => {
   req.apiKey = apiKey;
   next();
 };
+
+// Google Docs API endpoints
+
+// Create a new Google Doc
+app.post('/google-docs/create', async (req, res) => {
+  try {
+    const { title = 'Untitled Document' } = req.body;
+    const document = await googleDocsService.createDocument(title);
+    res.json({
+      success: true,
+      documentId: document.documentId,
+      title: document.title,
+      url: `https://docs.google.com/document/d/${document.documentId}/edit`
+    });
+  } catch (error) {
+    console.error('Error creating document:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Read a Google Doc
+app.get('/google-docs/:documentId', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const document = await googleDocsService.getDocument(documentId);
+    const textContent = googleDocsService.extractTextContent(document);
+    
+    res.json({
+      success: true,
+      documentId: document.documentId,
+      title: document.title,
+      textContent: textContent,
+      fullDocument: document
+    });
+  } catch (error) {
+    console.error('Error reading document:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Insert text at the beginning of a document
+app.post('/google-docs/:documentId/insert', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const { text } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    const result = await googleDocsService.insertText(documentId, text);
+    res.json({
+      success: true,
+      message: 'Text inserted successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('Error inserting text:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Append text to the end of a document
+app.post('/google-docs/:documentId/append', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const { text } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    const result = await googleDocsService.appendText(documentId, text);
+    res.json({
+      success: true,
+      message: 'Text appended successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('Error appending text:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Replace text in a document
+app.post('/google-docs/:documentId/replace', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const { searchText, replaceText } = req.body;
+    
+    if (!searchText || replaceText === undefined) {
+      return res.status(400).json({ error: 'Both searchText and replaceText are required' });
+    }
+
+    const result = await googleDocsService.replaceText(documentId, searchText, replaceText);
+    res.json({
+      success: true,
+      message: 'Text replaced successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('Error replacing text:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update document with custom requests
+app.post('/google-docs/:documentId/update', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const { requests } = req.body;
+    
+    if (!requests || !Array.isArray(requests)) {
+      return res.status(400).json({ error: 'Requests array is required' });
+    }
+
+    const result = await googleDocsService.updateDocument(documentId, requests);
+    res.json({
+      success: true,
+      message: 'Document updated successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('Error updating document:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get agents list
 app.get('/taskade-tower/agents', authenticateRequest, async (req, res) => {
@@ -143,6 +274,28 @@ app.get('/taskade-tower/health', (req, res) => {
     status: 'ok', 
     message: 'Taskade Agent Integration API is running',
     apiKeyConfigured: !!process.env.TASKADE_API_KEY
+  });
+});
+
+// Serve Google Docs test interface
+app.get('/google-docs-test', (req, res) => {
+  res.sendFile(__dirname + '/google-docs-test.html');
+});
+
+// Serve the main test interface
+app.get('/test', (req, res) => {
+  res.sendFile(__dirname + '/test-client.html');
+});
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Taskade & Google Docs Integration API',
+    endpoints: {
+      taskade: '/taskade-tower/health',
+      googleDocs: '/google-docs-test',
+      test: '/test'
+    }
   });
 });
 
