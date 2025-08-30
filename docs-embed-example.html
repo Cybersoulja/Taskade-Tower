@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Docs Embed Example</title>
+    <style>
+        .docs-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Embedded Google Doc</h1>
+    
+    <!-- Replace DOCUMENT_ID with actual Google Docs document ID -->
+    <iframe 
+        src="https://docs.google.com/document/d/DOCUMENT_ID/edit?usp=sharing&embedded=true"
+        class="docs-container"
+        frameborder="0">
+    </iframe>
+
+    <script>
+        // JavaScript to interact with the embedded document
+        function openDocInNewTab() {
+            const docId = 'YOUR_DOCUMENT_ID';
+            window.open(`https://docs.google.com/document/d/${docId}/edit`, '_blank');
+        }
+
+        // You can also create links dynamically
+        function createDocLink(docId, title) {
+            const link = document.createElement('a');
+            link.href = `https://docs.google.com/document/d/${docId}/edit`;
+            link.textContent = title;
+            link.target = '_blank';
+            return link;
+        }
+    </script>
+</body>
+</html>
