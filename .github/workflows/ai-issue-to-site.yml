@@ -1,4 +1,4 @@
-name: AI Issue → Website Deploy
+name: Taskade AI → Build Site Files
 
 on:
   issues:
@@ -13,20 +13,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Extract issue content
-        id: extract
         run: |
-          ISSUE_BODY="${{ github.event.issue.body }}"
+          # Write the full issue body safely to a file
+          echo "${{ github.event.issue.body }}" > issue.txt
 
-          echo "$ISSUE_BODY" > issue.txt
-
+          # Extract sections based on headers
           awk '/## HTML/{flag=1;next}/## CSS/{flag=0}flag' issue.txt > index.html
           awk '/## CSS/{flag=1;next}/## JavaScript/{flag=0}flag' issue.txt > style.css
           awk '/## JavaScript/{flag=1;next}/##/{flag=0}flag' issue.txt > script.js
 
+          # Create assets directory
           mkdir -p assets
           mv style.css assets/style.css
           mv script.js assets/script.js
@@ -37,5 +37,7 @@ jobs:
           git config user.email "ai@taskade.dev"
 
           git add index.html assets/style.css assets/script.js
-          git commit -m "Deploy AI-generated site from issue #${{ github.event.issue.number }}"
+
+          git commit -m "AI build from issue #${{ github.event.issue.number }}" || echo "Nothing to commit"
+
           git push
